@@ -118,11 +118,11 @@ Slurm cluster with the verl container; the Python entry points and the hyperpara
 ## Citation
 
 ```bibtex
-@article{ifcedit2026,
-  title   = {Learning to Edit {IFC} Building Models: Verifiable Checkers as the Training Signal for Dependency-Aware Editing Agents},
-  author  = {Wang, Bowen and others},
-  journal = {Advanced Engineering Informatics (submitted)},
-  year    = {2026}
+@misc{ifcedit2026,
+  title        = {Learning to Edit {IFC} Building Models: Verifiable Checkers as the Training Signal for Dependency-Aware Editing Agents},
+  author       = {Wang, Bowen and others},
+  year         = {2026},
+  howpublished = {\url{https://github.com/wbw520/ifcgym}}
 }
 ```
 
