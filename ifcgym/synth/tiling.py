@@ -1,4 +1,4 @@
-"""Stage 2 of the synthetic buildings (user 2026-10-21): LARGE storeys by tiling several apartment plans along a corridor, and a
+"""Stage 2 of the synthetic buildings: LARGE storeys by tiling several apartment plans along a corridor, and a
 vertical core (elevator shaft, stair, slab openings) so multi-storey buildings have the entities real ones have.
 
 tile_plans(plans, corridor=2.0) -> Plan: apartments are normalised to their bounding box, placed left to right on both sides of
@@ -47,7 +47,7 @@ def tile_plans(plans: list[Plan], corridor: float = 2.0, party: float = 0.24, he
     simply put even-indexed plans above the corridor (mirrored so their bottom edge touches it) and odd ones below."""
     above = plans[0::2]; below = plans[1::2]
     walls: list[WallSeg] = []; doors: list[Opening] = []; rooms: list[Room] = []; rects: list[tuple] = []
-    OUTDOOR = ("outdoor", "balcony", "terrace", "garden", "yard")   # quality review 2026-10-22: outdoor rooms stick out of the apartment envelope and overlap neighbours / the corridor
+    OUTDOOR = ("outdoor", "balcony", "terrace", "garden", "yard")   # outdoor rooms stick out of the apartment envelope and overlap neighbours / the corridor
     def place(row: list[Plan], y_edge: float, up: bool):
         x = 0.0; widths = []
         for p in row:

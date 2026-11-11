@@ -109,7 +109,7 @@ class M:
     def door_sides(self, d):
         """Spaces on either side of the door's wall at the door position, by probing: a point 0.15 m beyond each face of the wall
         (wall half-thickness from its mesh) at the door centre; the bounded space whose footprint contains it is that side's
-        space (review 2026-10-24: centroids of L-shaped rooms can lie outside the room, on the wrong side of the wall)."""
+        space (centroids of L-shaped rooms can lie outside the room, on the wrong side of the wall)."""
         w = self.host(d); u = self.wdir(w); n = np.array([-u[1], u[0]]); cd = self.c(d)[:2]
         vw = self.m(w)[:, :2]; pn = vw @ n; half = float(pn.max() - pn.min()) / 2; mid = float((pn.max() + pn.min()) / 2)
         base = cd + n * (mid - float(cd @ n)); res = {}
@@ -145,10 +145,10 @@ def resolve(mm, t):
     f = mm.f; tpl = t["template"]; p = t.get("prompt_template", t["prompt"]); meta = t.get("meta", {}); style = meta.get("style"); anchors = meta.get("anchors", [])   # paraphrased lists keep the template wording in prompt_template
     g = lambda x: f.by_guid(x)
     walls = [w for w in f.by_type("IfcWall") if mm.m(w) is not None]
-    if tpl.startswith("U-merge-space-T"):      # E011 cover4: the extended room = the first wall list ("bounded by the walls ... so that")
+    if tpl.startswith("U-merge-space-T"):      # the extended room = the first wall list ("bounded by the walls ... so that")
         ids = set(re.findall(r"[0-9A-Za-z_$]{22}", p.split("room that is bounded by the walls")[1].split(" so that")[0]))
         return {sp.GlobalId for sp in f.by_type("IfcSpace") if ids <= mm.swalls(sp)}
-    if tpl.startswith("U-storey-length"):      # E011 cover4: the storey's floor slab = the IfcSlab(s) contained in it
+    if tpl.startswith("U-storey-length"):      # the storey's floor slab = the IfcSlab(s) contained in it
         st = g(re.search(r"building storey with ID ([0-9A-Za-z_$]{22})", p).group(1))
         return {sl.GlobalId for sl in f.by_type("IfcSlab") if mm.storey(sl) == st}
     m = re.search(r"slab that is directly above the walls of the storey named '[^']*' \(GlobalId ([0-9A-Za-z_$]{22})\)", p)
@@ -316,7 +316,7 @@ def resolve(mm, t):
         W, V = g(m.group(2)), g(m.group(3)); cls = "IfcDoor" if m.group(1) == "door" else "IfcWindow"
         uw, uv = mm.wdir(W), mm.wdir(V); cw, cv = mm.c(W)[:2], mm.c(V)[:2]   # corner = intersection of the two centre lines
         A = np.array([uw, -uv]).T; s_ = np.linalg.lstsq(A, cv - cw, rcond=None)[0]; corner = cw + uw * s_[0]
-        stW = mm.storey(W)   # 'among all doors/windows on that storey' (review 2026-10-24)
+        stW = mm.storey(W)   # 'among all doors/windows on that storey'
         ds = sorted((float(np.linalg.norm(mm.c(x)[:2] - corner)), x.GlobalId) for x in f.by_type(cls) if mm.m(x) is not None and mm.storey(x) == stW)
         return {ds[0][1]} if ds and (len(ds) == 1 or ds[1][0] - ds[0][0] > 0.3) else set()
     m = re.search(r"the (westernmost|easternmost|northernmost|southernmost) (door|window) on the storey named '[^']*' \(GlobalId ([0-9A-Za-z_$]{22})\)", p)
@@ -536,7 +536,7 @@ for t in sel:
     want = set(t["intent"]["value"]) if t["intent"].get("kind") == "guids" else ({t["intent"]["value"]} if t["intent"].get("kind") == "guid" else set(t["target"][:1]))
     if t["template"].startswith("C-"):   # create tasks: the handler returns the task's own target on success (host wall / described space / storey)
         want = set(t["target"]) if t["intent"]["type"] in ("create_space", "create_column", "create_slab", "create_wall") else {t["intent"]["host"]}
-    if t["template"].startswith("D-delete-windows-facing"):   # E011 cover4: the description denotes the whole window set
+    if t["template"].startswith("D-delete-windows-facing"):   # the description denotes the whole window set
         want = set(t["intent"]["guids"])
     key = t["template"]
     if got is None or want is None:

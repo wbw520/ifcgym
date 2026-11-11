@@ -68,5 +68,5 @@
    "off_mean": 0.3978
   }
  },
- "_note": "2026-10-26: \"align\": \"edit\" restored - the frozen calibration (outputs/E001/calib_v4.json) used align=edit; the option was added later with default gt_guid, so this file (written before) silently switched to GUID alignment (+16 points on the released runs)."
+ "_note": "\"align\": \"edit\" restored - the frozen calibration (outputs/<run>/calib_v4.json) used align=edit; the option was added later with default gt_guid, so this file (written before) silently switched to GUID alignment (+16 points on the released runs)."
 }

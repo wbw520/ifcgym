@@ -1,8 +1,8 @@
-"""Supplementary teacher list (decision 2026-10-24): v8 tasks of the kinds the v7 teacher list lacks, so the SFT student sees every task
+"""Supplementary teacher list: v8 tasks of the kinds the v7 teacher list lacks, so the SFT student sees every task
 type before RL. Kinds = templates absent from v7 + reference phrasings absent from v7 (matched on prompt / prompt_template). Each kind
 is capped (--per-kind), drawn round-robin over body styles (extrusion / brep / clipped / faceset) and buildings, one task per building
 and kind first. Buildings of the v7 dev-val / held-out lists are never used (the v8 set is synthetic only).
-    python scripts/sample_supplement.py "outputs/tasks_synth2k_v8/*.jsonl" --out outputs/E008/supplement_v8.jsonl [--per-kind 120]"""
+    python scripts/sample_supplement.py "outputs/tasks_synth2k_v8/*.jsonl" --out outputs/<run>/supplement_v8.jsonl [--per-kind 120]"""
 import argparse, collections, glob, json, random, re
 
 KINDS = [   # (name, predicate on the task)

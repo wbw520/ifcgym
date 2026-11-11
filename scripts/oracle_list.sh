@@ -1,5 +1,5 @@
 #!/bin/bash
-# Full-list solvability gate (review 2026-10-24: oracles had run on samples only). Shards a task list by building and runs the three
+# Full-list solvability gate (oracles had run on samples only). Shards a task list by building and runs the three
 # scripted solvers (oracle_v4 positive + negative, oracle_extra, oracle_cascade) on every shard; prints totals and the templates
 # no solver checked. Run inside the python:3.12 container.   bash scripts/oracle_list.sh <tasks.jsonl> <out_dir> [n_shards=24]
 set -u

@@ -1,4 +1,4 @@
-"""Checker validation for the 2026-10-22 template families: a scripted agent performs create tasks with h.add_* and answers
+"""Checker validation for the extra template families: a scripted agent performs create tasks with h.add_* and answers
 retrieval tasks from the model (spatial tasks reuse the plain edits); the frozen checkers must accept them.
     python scripts/oracle_extra.py <tasks.jsonl>"""
 import json, os, sys, tempfile, shutil, collections
@@ -9,9 +9,9 @@ from ifcgym import ifctools as h
 from ifcgym.checkers import check
 
 tasks = [json.loads(l) for l in open(sys.argv[1]) if l.strip()]
-OLD_PLAIN = ("T0-set-fire-rating", "T0-set-name", "T1-delete-door-with-opening", "T1-set-wall-height")   # review 2026-10-24: no solver covered these
+OLD_PLAIN = ("T0-set-fire-rating", "T0-set-name", "T1-delete-door-with-opening", "T1-set-wall-height")   # no solver covered these
 tasks = [t for t in tasks if (t["template"].startswith(("C-", "R-", "S-")) and t["template"][-2:] not in ("-D", "-T", "-S", "-P", "-C", "-V")) or t["template"] in OLD_PLAIN]   # v4 templates: scripts/oracle_v4.py; T1-T3 moves: oracle_cascade.py
-NEG = "--negative" in sys.argv   # negative control (review 2026-10-24): a wrong solution must FAIL the checker
+NEG = "--negative" in sys.argv   # negative control: a wrong solution must FAIL the checker
 res = collections.defaultdict(list)
 for t in tasks:
     f = ifcopenshell.open(t["ifc"]); sc = h.unit_scale(f) or 1.0; it = dict(t["intent"]); final = ""
@@ -69,7 +69,7 @@ for t in tasks:
             h.delete(f, f.by_guid(it["guid"]))
         out = os.path.join(tempfile.mkdtemp(prefix="oracle_x_"), "e.ifc"); f.write(out)
         r = check(t["ifc"], out, t, final)
-        shutil.rmtree(os.path.dirname(out), ignore_errors=True)   # 29,768 leftover temp dirs on lustre, 2026-10-23
+        shutil.rmtree(os.path.dirname(out), ignore_errors=True)   # no leftover temp dirs
         res[t["template"]].append(r.strict != NEG)
         if r.strict == NEG:
             print(f"FAIL {t['task_id']}: intent={r.intent} dep={r.dependency} pres={r.preservation} valid={r.validity} | {r.details['intent'][:120]} | {r.details['preservation'][:100]} | {r.details['validity'][:60]}")

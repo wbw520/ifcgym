@@ -1,4 +1,4 @@
-"""Select the training buildings (user 2026-10-22: about 3000 in total) from everything synthesised, with target shares per
+"""Select the training buildings (about 3000 in total) from everything synthesised, with target shares per
 schema (IFC4 40 / IFC4X3 40 / IFC2X3 20), body style (extrusion 45 / brep 20 / clipped 15 / faceset 20), sparse relations (20 %)
 and tiled blocks (25 %). Greedy: repeatedly pick the building that most reduces the deviation from the targets.
     python scripts/select_buildings.py --root ${IFCGYM_ROOT}/data/synth/buildings2k --n 3000 --out <root>/selected.txt"""

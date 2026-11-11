@@ -1,11 +1,11 @@
-"""Pre-registered comparison of two arms on the frozen dev-val list (H001/E006 analysis plan, prereg #3).
+"""Paired comparison of two runs on the same task list.
 
-    python scripts/compare_arms.py --tasks outputs/E006/devval_tasks.jsonl --a outputs/E005/q8b_nothink_none --b outputs/E006/student_s1_none [outputs/E006/student_s2_none] [--subset ids.txt] [--seed 0]
+    python scripts/compare_arms.py --tasks <tasks.jsonl> --a outputs/eval/<run_a> --b outputs/eval/<run_b> [<more runs of b>] [--subset ids.txt] [--seed 0]
 
 Arm B may be several run dirs (trainer seeds): each task's B outcome is the mean over seeds (0, 0.5, 1). Primary statistic: paired
 difference in strict success (B - A, percentage points) with a CLUSTER bootstrap over target-element clusters (the task's first target
 GlobalId), stratified by project, 10,000 resamples, percentile CI, fixed RNG seed; exact McNemar on discordant pairs as cross-check;
-per-project differences; task-level bootstrap and design effect reported for reference. Decision rule (prereg): supported if the point
+per-project differences; task-level bootstrap and design effect reported for reference. Decision rule: supported if the point
 estimate >= 10.0 and the cluster-CI lower bound > 0 and both projects' differences have the same sign and McNemar p < 0.05;
 falsified if the point estimate < 5.0 and the cluster-CI upper bound < 10.0; otherwise inconclusive.
 """
@@ -35,7 +35,7 @@ def load_outcomes(run_dirs: list[str], ids: set[str]) -> dict[str, float]:
 
 
 def cluster_of(t: dict) -> str:
-    """Target-element cluster: the first target GlobalId; a compound task (intent 'all', E009 prereg) uses its FIRST part's element."""
+    """Target-element cluster: the first target GlobalId; a compound task uses its FIRST part's element."""
     if t["intent"].get("type") == "all":
         p0 = t["intent"]["parts"][0]
         for k in ("guid", "host", "storey"):
@@ -57,7 +57,7 @@ def mcnemar_exact(b: int, c: int) -> float:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tasks", nargs="+", required=True); ap.add_argument("--a", nargs="+", required=True); ap.add_argument("--b", nargs="+", required=True)
-    ap.add_argument("--sign-by", choices=["project", "file"], default="project", help="E009: 'file' = the same-sign rule over the --tasks files "
+    ap.add_argument("--sign-by", choices=["project", "file"], default="project", help="'file' = the same-sign rule over the --tasks files "
                     "(real / held-out synthetic compound dev-val) instead of per project; the bootstrap stays stratified by project")
     ap.add_argument("--subset", default=None); ap.add_argument("--seed", type=int, default=0); ap.add_argument("--resamples", type=int, default=10000)
     a = ap.parse_args()

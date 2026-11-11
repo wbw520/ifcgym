@@ -1,12 +1,12 @@
-"""Per-task feature cache for calibrating the BIM-Edit evaluator re-implementation (pilot H001/E001).
+"""Per-task feature cache for calibrating the BIM-Edit evaluator re-implementation.
 
 Everything expensive (edit graphs, point clouds, OBB-IoU match matrix, relation sets by type) is computed ONCE per (prediction file)
 and pickled; `score_from_features(feat, cfg)` then evaluates any scoring configuration in milliseconds, so the rule choices that the
 paper leaves open (which relation types count, how deletes are scored, when a task collapses to zero) can be fitted on the released
 per-task scores of two models and validated on two others.
 
-    python -m ifcedit.bimedit_features --official data/bimedit-runs/claude-sonnet --out outputs/E001/feat/claude-sonnet [--workers 30]
-    python -m ifcedit.bimedit_features --run outputs/E002 --out outputs/E002/feat
+    python -m ifcedit.bimedit_features --official data/bimedit-runs/claude-sonnet --out outputs/<run>/feat/claude-sonnet [--workers 30]
+    python -m ifcedit.bimedit_features --run outputs/<run> --out outputs/<run>/feat
 """
 from __future__ import annotations
 
@@ -75,7 +75,7 @@ _GMEMO: dict = {}
 
 
 def graph_cached(path: str):
-    """build_graph of an IMMUTABLE benchmark file (input / ground truth), cached on disk and in memory (2026-10-26: the 45 tasks on
+    """build_graph of an IMMUTABLE benchmark file (input / ground truth), cached on disk and in memory (the 45 tasks on
     the 154-349 MB models rebuilt the same graph up to five times per task; results are identical to building it every time)."""
     import hashlib, pickle
     import ifcopenshell
@@ -143,7 +143,7 @@ def features(task: dict, pred_path: str) -> dict:
     # removed targets still present?
     out["ref_removed_present_in_pred"] = {k: has(fpr, k) for k in g_ref.removed}
     out["pred_removed_cls"] = {k: n.cls for k, n in g_pred.removed.items()}
-    # GUID-aligned view (official-evaluator hypothesis 2026-10-19: GT-edited nodes are compared with the prediction's SAME-GUID nodes
+    # GUID-aligned view (official-evaluator hypothesis: GT-edited nodes are compared with the prediction's SAME-GUID nodes
     # whatever the prediction changed): for every GT live node, the prediction's node of the same GUID - its cloud, class and attrs
     pred_nodes = G_pr[0]
     out["pred_same"] = {}
@@ -160,7 +160,7 @@ def _wrap(args):
     try:
         f = features(task, pred)
     except (OSError, MemoryError) as e:   # environment (missing input / torn-down mount / memory), not the prediction: write nothing so
-        return task["task_id"], f"NOT WRITTEN {type(e).__name__}: {e}"   # a rerun retries it (2026-10-26: 190 such records scored 0)
+        return task["task_id"], f"NOT WRITTEN {type(e).__name__}: {e}"   # a rerun retries it (190 such records scored 0)
     except Exception as e:  # noqa: BLE001
         f = {"task_id": task["task_id"], "operation": task["operation"], "category": task["category"], "pred_readable": False, "error": f"{type(e).__name__}: {e}"}
     with open(outp, "wb") as fh:

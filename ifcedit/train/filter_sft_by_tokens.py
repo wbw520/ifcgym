@@ -1,5 +1,4 @@
-"""Drop SFT samples longer than a token budget (E008, user 2026-10-25: max length 32,768; samples are dropped, not truncated - right
-truncation would cut the final answer / commit). Length = Qwen3.5 tokens of all message contents, reasoning and tool calls, plus a margin
+"""Drop SFT samples longer than a token budget. Length = Qwen3.5 tokens of all message contents, reasoning and tool calls, plus a margin
 for the chat-template markup. Rewrites train.parquet / val.parquet in place and records the counts in data_card.json.
     python train/filter_sft_by_tokens.py <sft_data_dir> [--max 32768] [--margin 1024]   (verl container: transformers)"""
 import argparse, json, os

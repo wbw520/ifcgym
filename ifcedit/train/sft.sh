@@ -1,16 +1,16 @@
 #!/bin/bash
-# SFT of the IfcEdit student (H001/E005) on teacher episodes. Runs INSIDE the verl container on a held node (see run_in_container.sh).
-# Base: Qwen3-8B (or BASE=.../Qwen3-14B). LoRA r=64 on all linear layers; multi-turn messages with tool calls rendered by the
+# SFT of the IfcEdit student on teacher episodes. Runs inside the verl container on a GPU node.
+# Base: Qwen3.5-9B (or BASE=.../Qwen3.5-27B). LoRA r=64 on all linear layers; multi-turn messages with tool calls rendered by the
 # model's own chat template; loss on assistant turns only.
 set -euo pipefail
 R=${IFCGYM_ROOT:?set IFCGYM_ROOT to the repository root}
-BASE=${BASE:-${IFCGYM_MODELS:-models}/Qwen3.5-9B}   # student since 2026-10-20 (user); Qwen3-8B = the E004 smoke base
+BASE=${BASE:-${IFCGYM_MODELS:-models}/Qwen3.5-9B}   # the student backbone
 # Qwen3.5: LoRA on the language model only; its linear-attention layers need flash-linear-attention + causal-conv1d (installed for this
 # (flash-linear-attention + causal-conv1d, FLA_DEPS; FASTPATH=0 switches them off)
 # need train/sft_entry.py (CPU weight init on every rank).
 DEPS=${FLA_DEPS:-}   # optional: directory with flash-linear-attention + causal-conv1d for the Qwen3.5 fast path
 if [ "${FASTPATH:-1}" = 1 ] && [ -d "$DEPS/fla" ]; then export PYTHONPATH="$DEPS:${PYTHONPATH:-}"; echo "[sft] fast path libraries on PYTHONPATH"; fi
-O=${OUT:-$R/outputs/E006}
+O=${OUT:-$R/outputs/sft}
 RUN=${RUN:-r1}
 DATA=${DATA:-$O/data}
 NGPU=$(echo "${CUDA_VISIBLE_DEVICES:?set CUDA_VISIBLE_DEVICES}" | tr ',' '\n' | grep -c .)

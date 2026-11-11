@@ -1,4 +1,4 @@
-"""IfcEdit episodes for verl's agent-loop rollout: multi-turn GRPO of the IFC-editing student (H001/E012).
+"""IfcEdit episodes for verl's agent-loop rollout: multi-turn GRPO of the IFC-editing student.
 
 One sample of the RL dataset = one generated task (extra_info.task = the task record). The loop plays the evaluation episode of
 protocol v3 (ifcedit.agent.run_episode) token by token inside verl's rollout:
@@ -7,14 +7,14 @@ protocol v3 (ifcedit.agent.run_episode) token by token inside verl's rollout:
     response = assistant turn (mask 1) | tool outputs (mask 0) | assistant turn (mask 1) | ... | final answer (mask 1)
 
 Same tools (execute_ifc_code / inspect_element / find_elements / check_model as code in the sandbox), budget of 20 tool rounds,
-budget note at 3 and 1 rounds left, temperature from the trainer. Differences to the evaluation (prereg amendment): the context
+budget note at 3 and 1 rounds left, temperature from the trainer. Differences to the evaluation: the context
 is the full token stream (no pruning of old tool outputs - verl trains one sequence per episode), the episode also ends when the
 trajectory token budget or EPISODE_MAX_S wall time is used up, and the sandbox jail hides /proc instead of mounting a private one
 (the verl container does not allow a new procfs).
 
 Reward = 1 if the frozen checkers call the committed result strictly correct, else 0 (train/rl/score_one.py, IFC venv). A
 scorer failure is an environment failure: no gradient (mask 0) and reward 0.
-Reward ablation (H001/E018): IFCGYM_REWARD=intent_validity rewards intent AND validity only (the dependency and preservation gates
+Reward ablation: IFCGYM_REWARD=intent_validity rewards intent AND validity only (the dependency and preservation gates
 are dropped from the reward; the checkers still run and every term is logged per episode). Default IFCGYM_REWARD=strict.
 
 Environment variables (read in every rollout worker):
@@ -46,7 +46,7 @@ from ifcgym.sandbox import ISOLATE, ZYGOTE, Sandbox
 
 CODE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 IFC_PY = os.environ.get("IFCGYM_IFC_PYTHON", "${IFCGYM_ROOT}/.venvs/ifc-verl/bin/python")
-WORK = os.environ.get("IFCGYM_RL_WORK", os.path.join(CODE, "outputs/E012/rl_work"))
+WORK = os.environ.get("IFCGYM_RL_WORK", os.path.join(CODE, "outputs/rl/rl_work"))
 EPISODE_MAX_S = float(os.environ.get("IFCGYM_EPISODE_MAX_S", "600"))
 REWARD_MODE = os.environ.get("IFCGYM_REWARD", "strict")
 assert REWARD_MODE in ("strict", "intent_validity"), REWARD_MODE

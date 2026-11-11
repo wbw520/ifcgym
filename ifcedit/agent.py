@@ -1,7 +1,7 @@
-"""Tool-calling CodeAct agent over an OpenAI-compatible endpoint (SGLang / vLLM services on the held nodes).
+"""Tool-calling CodeAct agent over an OpenAI-compatible endpoint (SGLang / vLLM).
 
 Protocol = BIM-Edit Sec. 4.1 / Appendix F: system prompt F.3 verbatim, one tool `execute_ifc_code`, budget of N tool-call rounds,
-the run ends when the model answers without a tool call or the budget is exhausted. Feedback modes (DESIGN.md): `none` (BIM-Edit),
+the run ends when the model answers without a tool call or the budget is exhausted. Feedback modes: `none` (BIM-Edit),
 `validity`, `all` — extra checker text appended to the tool output after a commit.
 """
 from __future__ import annotations
@@ -65,7 +65,7 @@ def _text_tool_calls(content: str) -> list[tuple[str, str]]:
 TOOLS = [{"type": "function", "function": {"name": "execute_ifc_code", "description": TOOL_DESCRIPTION,
           "parameters": {"type": "object", "properties": {"code": {"type": "string"}}, "required": ["code"]}}}]
 
-# ---- tools v2 (H001/E007; user 2026-10-20: the BIM-Edit tool definition need not be kept): a structured read-only inspection
+# ---- tools v2: a structured read-only inspection
 # tool plus the code tool with the helper module `h` (ifcedit/ifctools.py) preloaded, and a short IFC reference card.
 from ifcgym.ifctools import HELP as _HELP  # noqa: E402
 
@@ -91,7 +91,7 @@ TOOLS_V2 = [
                     "required": ["guid"]}}},
     {"type": "function", "function": {"name": "execute_ifc_code", "description": TOOL_DESCRIPTION_V2,
      "parameters": {"type": "object", "properties": {"code": {"type": "string"}}, "required": ["code"]}}},
-    # protocol v2.2 (2026-10-23, user): a query tool for references without a GlobalId and a self-check tool before committing
+    # protocol v2.2: a query tool for references without a GlobalId and a self-check tool before committing
     {"type": "function", "function": {"name": "find_elements", "description": (
         "Find elements WITHOUT knowing their GlobalId: filter by IFC class (e.g. IfcWall, IfcDoor, IfcSpace, IfcColumn, IfcSlab), storey "
         "(GlobalId or name), name substring, predefined type, and/or distance in plan from a point (near=[x, y] in MODEL units, radius). "
@@ -125,7 +125,7 @@ SYSTEM_PROMPT_V2 = SYSTEM_PROMPT + (
     "Consistency: when an element is moved, resized or deleted, its hosted elements, joined walls, bounded spaces and their space "
     "boundaries must follow; change nothing else."
 )
-# Teacher-only recipe (context distillation, E007): the data-collection teacher gets an explicit cascade checklist; the student is
+# Teacher-only recipe (context distillation): the data-collection teacher gets an explicit cascade checklist; the student is
 # trained on the resulting traces WITHOUT it (its prompt is SYSTEM_PROMPT_V2), so the procedure must be internalised.
 CASCADE_RECIPE = (
     "\n\nProcedure for a wall move (vector v): (1) inspect_element(wall) - note the axis end points, thickness, the world y/x of the "
@@ -168,13 +168,13 @@ CASCADE_RECIPE = (
     "that must be connected to existing walls: h.add_wall, then h.connect_walls(ifc, existing, new, 'ATSTART'|'ATEND', 'ATSTART'|'ATEND') "
     "for each (the end of each wall at the shared point). 'Directly above / below X' = same XY on the next storey up / down. "
     "Answers that ask for several ids end with {\"global_ids\": [...]}. All prompt coordinates are METRES: convert with 1/h.unit_scale(ifc). "
-    "Instructions with several numbered changes (E009): do them one after another and call commit() after EACH completed change - later "
+    "Instructions with several numbered changes: do them one after another and call commit() after EACH completed change - later "
     "calls continue from the committed state and the last commit is the result - so finished changes are kept even if the tool budget runs "
     "out; inspect only what the next change needs and do not re-verify finished changes. Relationship wording ('create an opening and "
     "establish the relationships wall-opening (IfcRelVoidsElement) and opening-door (IfcRelFillsElement)', 'assign it to storey S'): "
     "h.add_opening_fill creates the opening, both relationships and the storey containment of the host wall's storey; 'remove the "
     "relationships of the opening to the wall / the storey': h.delete of the door and of the opening removes them. "
-    "Quantity take-off (E010): quantity names (GrossSideArea, net volume, gross floor area, ...) are the IFC base quantities "
+    "Quantity take-off: quantity names (GrossSideArea, net volume, gross floor area, ...) are the IFC base quantities "
     "(Qto_*BaseQuantities, IFC4X3); compute them from the geometry (ifcopenshell.geom shapes, ifcopenshell.util.shape.get_volume / "
     "get_area / get_footprint_area), never from quantity or property values stored in the file. Wall: Length along the centre line; Width "
     "= thickness; GrossSideArea = elevation area of the wall's middle plane WITHOUT deducting openings, NetSideArea = the same WITH the "
@@ -187,7 +187,7 @@ CASCADE_RECIPE = (
     "opening, clipped to the host; Volume = the volume it removes from its host (Area x the host's thickness). Storey: GrossFloorArea = "
     "plan area covered by its spaces together with its walls and columns (construction elements included), NetFloorArea = sum of its "
     "spaces' NetFloorArea. A total over several elements = sum of the per-element quantities. Answer in the unit asked. "
-    "Columns and slabs (E010): a column / slab given by its bounding box (corner, centre of the lower face, or length / width / height) "
+    "Columns and slabs: a column / slab given by its bounding box (corner, centre of the lower face, or length / width / height) "
     "is created with h.add_column / h.add_slab and then adjusted (rectangular section: the profile's XDim / YDim; base elevation: "
     "h.translate in Z so that the lowest z of the body equals the requested value). Relationships without a helper: oh = "
     "(ifc.by_type('IfcOwnerHistory') or [None])[0]; a connection = ifc.create_entity('IfcRelConnectsElements', "
@@ -198,7 +198,7 @@ CASCADE_RECIPE = (
     "'Keep the lowest z of the bounding box fixed' while changing a thickness: h.set_extrusion_depth keeps the base for bodies extruded "
     "upwards - check the bounding box afterwards. One-sided extension 'keeping the edge at x = X fixed': move only the opposite edge "
     "(h.shift_vertices_on_plane on that plane). "
-    "More edits (E010): deleting an element with listed relationships: h.delete removes the element and every relationship that "
+    "More edits: deleting an element with listed relationships: h.delete removes the element and every relationship that "
     "references it (voids, fills, connections, space boundaries, containment) - delete its openings and their doors / windows "
     "first when asked; the related elements stay unchanged. A wall given by its bounding box: the axis is the centre line along "
     "the long side, thickness = the short side; h.add_wall then h.translate in Z to the requested base; connect with h.connect_walls. "
@@ -214,7 +214,7 @@ CASCADE_RECIPE = (
     "create an IfcOpeningElement with a box body through the slab (h._extrusion of an IfcRectangleProfileDef) and "
     "ifcopenshell.api.feature.add_feature(ifc, feature=opening, element=slab). Relative changes ('reduce the height by 0.5 m') "
     "start from the current value read from the model. "
-    "More edits (E011): 'the room bounded by the walls A, B, C' = the IfcSpace whose IfcRelSpaceBoundary relationships include all "
+    "More edits: 'the room bounded by the walls A, B, C' = the IfcSpace whose IfcRelSpaceBoundary relationships include all "
     "of them; 'the elements that separate two rooms' = the wall bounding both rooms with the openings and doors / windows in it. "
     "A storey's length is that of its floor slab (the IfcSlab contained in it): change the slab with one edge fixed (vertices on "
     "the moving edge shifted, h.shift_vertices_on_plane). 'The slab that lies on the walls of a storey' = the slab whose underside is "
@@ -226,7 +226,7 @@ CASCADE_RECIPE = (
     "code directly in the tool call instead of drafting the whole program in your reasoning first."
 )
 PROTOCOLS = {"v1": (SYSTEM_PROMPT, TOOLS), "v2": (SYSTEM_PROMPT_V2, TOOLS_V2), "v2r": (SYSTEM_PROMPT_V2 + CASCADE_RECIPE, TOOLS_V2),
-             "v3": (SYSTEM_PROMPT_V2, TOOLS_V2)}   # v3 (2026-10-28) = v2 + sandbox jail (runners) + BUDGET_NOTE near the call limit
+             "v3": (SYSTEM_PROMPT_V2, TOOLS_V2)}   # v3 = v2 + sandbox jail (runners) + BUDGET_NOTE near the call limit
 BUDGET_NOTE = ("[budget] {left} tool round{s} left. The result is the last commit(): if the edit is done or as good as you can make it, "
                "commit() now; do not start new explorations.")
 BUDGET_NOTE_AT = (3, 1)     # rounds left when the note is appended to the round's last tool output

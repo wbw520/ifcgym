@@ -1,4 +1,4 @@
-"""Prior IFC-agent frameworks run as comparison rows on the IfcEdit held-out tasks (baselines B007 MCP4IFC, B008 IFC-Agent, 2026-11-03).
+"""Prior IFC-agent frameworks run as comparison rows on the IfcEdit held-out tasks (MCP4IFC, IFC-Agent).
 
 Every framework module exposes
     run(prompt: str, ifc_path: str, workdir: str, client: OpenAI, model: str, budget: int, max_tokens: int, temperature: float) -> dict

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Full-list reference verification (review 2026-10-24: gates verified samples only; 3 wrong teacher tasks sat in unsampled buildings).
+# Full-list reference verification (gates verified samples only; 3 wrong teacher tasks sat in unsampled buildings).
 # Sorts a task list by building, shards it, runs scripts/verify_refs_v4.py on every shard in parallel, writes the mismatching task ids
 # to <out>/mismatch_ids.txt (exclude them from SFT / RL). Run inside the python:3.12 container.
 #   bash scripts/verify_list.sh <tasks.jsonl> <out_dir> [n_shards=24]

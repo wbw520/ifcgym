@@ -3,11 +3,11 @@
 Semantics (as published): the code runs in a subprocess with the IFC model pre-loaded as `ifc` (ifcopenshell.file); also available
 `ifcopenshell`, `api` (ifcopenshell.api), `util` (ifcopenshell.util), `element_util` (ifcopenshell.util.element), `guid`
 (ifcopenshell.guid). Assign to `result` to return data. `commit()` saves modifications. 120 s timeout per call.
-Our choice (DESIGN.md, 2026-10-19): every call starts from the last COMMITTED file in a fresh namespace, so uncommitted changes are
+Our choice: every call starts from the last COMMITTED file in a fresh namespace, so uncommitted changes are
 discarded (BIM-Edit Appendix H describes discarded rounds); stdout and the repr of `result` are returned, exceptions are returned as
 text. Each commit writes a numbered snapshot next to the working file so trajectories can be replayed and rolled back.
-isolate=True (protocol v3, 2026-10-28): the worker runs in its own user / mount / pid / net namespaces and sees only its work dir,
-the helper package and the interpreter (read-only) and the input model as original.ifc (read-only) - E010 / E011 students had
+isolate=True (protocol v3): the worker runs in its own user / mount / pid / net namespaces and sees only its work dir,
+the helper package and the interpreter (read-only) and the input model as original.ifc (read-only) - earlier students had
 walked the file system and opened other tasks' BIM-Edit ground-truth files.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ WORKER = r'''
 import sys, json, io, traceback, contextlib
 import ifcopenshell, ifcopenshell.api, ifcopenshell.util, ifcopenshell.util.element, ifcopenshell.guid
 work = sys.argv[1]; code = open(sys.argv[2]).read(); max_out = int(sys.argv[3])
-pending = work + ".pending"            # working state carried from call to call (2026-10-23: a call continues from the previous call;
+pending = work + ".pending"            # working state carried from call to call (a call continues from the previous call;
 import os                              # a call that raises is rolled back; commit() saves the working state as the result)
 h = None
 if len(sys.argv) > 4 and sys.argv[4]:          # tools v2: the helper module (ifcedit/ifctools.py) as `h`
@@ -77,7 +77,7 @@ set -e
 W=$1; PY=$2; PKG=$3; IN=$4; shift 4
 S=$(mktemp -d /tmp/sbx.XXXXXX); mount -t tmpfs tmpfs $S; mkdir $S/py $S/pkg $S/work; touch $S/input
 mount --bind $PY $S/py; mount --bind $W $S/work; mount --bind $IN $S/input; [ -n "$PKG" ] && mount --bind $PKG $S/pkg
-for d in /store /lustre /dev/shm /raid /home /mnt /scratch; do [ -d $d ] && mount -t tmpfs tmpfs $d || true; done
+for d in /dev/shm /home /mnt /scratch /data /srv; do [ -d $d ] && mount -t tmpfs tmpfs $d || true; done
 mkdir -p $PY $W; mount --bind $S/py $PY; mount -o remount,bind,ro $PY
 if [ -n "$PKG" ]; then mkdir -p $PKG; mount --bind $S/pkg $PKG; mount -o remount,bind,ro $PKG; fi
 mount --bind $S/work $W; mount --bind $S/input $W/original.ifc; mount -o remount,bind,ro $W/original.ifc
@@ -85,7 +85,7 @@ cd $W; exec "$@"
 '''
 
 
-# Zygote (2026-10-28, user: use the CPUs): one process per episode imports ifcopenshell / numpy / the helpers once, then forks a child
+# Zygote: one process per episode imports ifcopenshell / numpy / the helpers once, then forks a child
 # per tool call that runs WORKER exactly as the old fresh `python -I _worker.py` did (fresh copy of the interpreter state, the model
 # re-opened from disk, roll back on error, crash and timeout confined to the child). Saves ~1 s of interpreter start + imports per call.
 # Protocol on stdin / stdout: one JSON request per line {"argv": [...], "out": path, "timeout": s} -> one JSON reply {"rc": int, "timeout": bool}.

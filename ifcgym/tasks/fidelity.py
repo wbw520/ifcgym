@@ -1,4 +1,4 @@
-"""Rule checks that a paraphrase keeps the meaning-critical tokens of a generated prompt (review 2026-10-24: DeepSeek turned 'farthest
+"""Rule checks that a paraphrase keeps the meaning-critical tokens of a generated prompt (DeepSeek turned 'farthest
 to your left' into 'right' in 60-70 % of such prompts; used by paraphrase.check as a guard and by scripts/audit_paraphrase.py).
 Semantic shifts these rules cannot see (an id moved to another element) are left to scripts/judge_paraphrase.py."""
 import re

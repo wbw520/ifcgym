@@ -1,7 +1,7 @@
 """Run a served model on IfcEdit generated tasks (tasks/generate.py records) with the gated checkers; feedback modes none / validity / all.
 
-    python -m ifcedit.run_tasks --model deepseek-v4-flash --tasks outputs/tasks/wbdg_office.jsonl --feedback all --out outputs/E003/ds_all [--workers 4] [--limit N]
-    python -m ifcedit.run_tasks --report outputs/E003            # aggregate every run dir below it
+    python -m ifcedit.run_tasks --model deepseek-v4-flash --tasks outputs/tasks/wbdg_office.jsonl --feedback all --out outputs/<run>/ds_all [--workers 4] [--limit N]
+    python -m ifcedit.run_tasks --report outputs/<run>            # aggregate every run dir below it
 
 Per task: sandbox on the project IFC, agent episode, final check -> results.jsonl rows with strict / per-check flags / side effects / cost.
 The task prompt is the generated prompt; the system prompt is BIM-Edit's (agent.py). `all` feedback appends the checker report after
@@ -29,7 +29,7 @@ from ifcedit.run_bimedit import endpoint_for
 
 ROOT = os.environ.get("IFCGYM_ROOT", os.getcwd())
 EXTRA_BODY: dict = {}
-CHECK_POOL = None   # process pool: IfcOpenShell is not thread-safe, every check runs in its own worker process (2026-10-19)
+CHECK_POOL = None   # process pool: IfcOpenShell is not thread-safe, every check runs in its own worker process
 
 
 def run_check(before: str, after: str, spec: dict, final_text: str | None = None):
@@ -68,7 +68,7 @@ def run_one(task: dict, client: OpenAI, model: str, out: str, budget: int, feedb
         shutil.copyfile(sb.final_path(), edited)
         rep = run_check(task["ifc"], edited, task, ep.final_text)
         summary = {"task_id": tid, "project": task["project"], "template": task["template"], "tier": task["tier"], "model": model, "feedback": feedback, "protocol": protocol,
-                   # bool(): some checks return numpy.bool_, which json default=str wrote as the STRING "False" - truthy for every reader (bug found 2026-10-26)
+                   # bool(): some checks return numpy.bool_, which json default=str wrote as the STRING "False" - truthy for every reader
                    "strict": bool(rep.strict), "validity": bool(rep.validity), "intent": bool(rep.intent), "dependency": bool(rep.dependency), "preservation": bool(rep.preservation),
                    "under_edit": bool(rep.under_edit), "side_effects": rep.side_effects, "new_errors": rep.new_errors,
                    "tool_calls": ep.tool_calls, "commits": ep.commits, "tokens_in": ep.tokens_in, "tokens_out": ep.tokens_out, "seconds": round(ep.seconds, 1),
@@ -109,12 +109,12 @@ def report(root: str) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model"); ap.add_argument("--base-url", nargs="*", default=None, help="one or more replicas of the same model: tasks are spread round-robin (2026-10-28)"); ap.add_argument("--tasks", nargs="*", default=None)
+    ap.add_argument("--model"); ap.add_argument("--base-url", nargs="*", default=None, help="one or more replicas of the same model: tasks are spread round-robin"); ap.add_argument("--tasks", nargs="*", default=None)
     ap.add_argument("--feedback", default="none", choices=["none", "validity", "all"]); ap.add_argument("--budget", type=int, default=20)
     ap.add_argument("--out"); ap.add_argument("--workers", type=int, default=4); ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--repeats", type=int, default=1, help="k samples per task (RL pool pre-filter): task ids get the suffix @<i>")
     ap.add_argument("--temperature", type=float, default=0.0); ap.add_argument("--top-p", type=float, default=1.0); ap.add_argument("--max-tokens", type=int, default=8192)
-    ap.add_argument("--python", default=sys.executable); ap.add_argument("--report", default=None); ap.add_argument("--no-think", action="store_true", help="disable Qwen3-style thinking via chat_template_kwargs (declared per experiment)"); ap.add_argument("--shard", default=None, help="i/n: disjoint task shard"); ap.add_argument("--tiers", nargs="*", type=int, default=None); ap.add_argument("--protocol", default="v1", choices=["v1", "v2", "v2r", "v3"], help="v1 = BIM-Edit single tool; v2 = inspect_element + code tool with helpers (E007); v2r = v2 + cascade recipe (teacher data collection only); v3 = v2 + sandbox jail + budget note (2026-10-28)"); ap.add_argument("--think", action="store_true", help="DeepSeek-V4 thinking mode (chat_template_kwargs thinking=true); reasoning stored as reasoning_content"); ap.add_argument("--effort", default=None, choices=["low", "medium", "high", "max"], help="reasoning_effort request field (Kimi-K3: low/high/max)")
+    ap.add_argument("--python", default=sys.executable); ap.add_argument("--report", default=None); ap.add_argument("--no-think", action="store_true", help="disable Qwen3-style thinking via chat_template_kwargs (declared per experiment)"); ap.add_argument("--shard", default=None, help="i/n: disjoint task shard"); ap.add_argument("--tiers", nargs="*", type=int, default=None); ap.add_argument("--protocol", default="v1", choices=["v1", "v2", "v2r", "v3"], help="v1 = BIM-Edit single tool; v2 = inspect_element + code tool with helpers; v2r = v2 + cascade recipe (teacher data collection only); v3 = v2 + sandbox jail + budget note"); ap.add_argument("--think", action="store_true", help="DeepSeek-V4 thinking mode (chat_template_kwargs thinking=true); reasoning stored as reasoning_content"); ap.add_argument("--effort", default=None, choices=["low", "medium", "high", "max"], help="reasoning_effort request field (Kimi-K3: low/high/max)")
     a = ap.parse_args()
     if a.no_think:
         EXTRA_BODY["chat_template_kwargs"] = {"enable_thinking": False}
@@ -147,7 +147,7 @@ def main() -> None:
                "tasks": a.tasks, "started": time.strftime("%Y-%m-%dT%H:%M:%S")}, open(os.path.join(out, "config.json"), "w"), indent=1)
     global CHECK_POOL
     # forkserver, not fork: the pool forks its workers lazily while the episode threads (and the HTTP client) are running, and a forked
-    # child can inherit a lock held by another thread - the first checks of a run then hang forever (E010 / E011 evals, 2026-10-27)
+    # child can inherit a lock held by another thread - the first checks of a run then hang forever
     CHECK_POOL = ProcessPoolExecutor(max_workers=max(2, a.workers), mp_context=multiprocessing.get_context("forkserver"))
     res = open(os.path.join(out, f"results{('_' + a.shard.replace('/', 'of')) if a.shard else ''}.jsonl"), "a"); done = 0; t0 = time.time()
     with ThreadPoolExecutor(max_workers=a.workers) as ex:

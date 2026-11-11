@@ -1,7 +1,7 @@
-"""RL prompt pool for GRPO (2026-10-22, user: the full task set is far more than GRPO can consume): a stratified sample over
+"""RL prompt pool for GRPO: a stratified sample over
 buildings x template x reference style, with tier-2/3 and topological/spatial/path references up-weighted, excluding the teacher
 list and the dev-val buildings. The rest of the generated tasks stays on disk as a reserve for pass-rate filtering.
-    python scripts/sample_rl_pool.py --tasks 'outputs/tasks_synth2k_v7/*.jsonl' --exclude outputs/E008/synth_teacher_tasks.jsonl --out outputs/E008/rl_pool.jsonl --n 30000 --seed 0"""
+    python scripts/sample_rl_pool.py --tasks 'outputs/tasks_synth2k_v7/*.jsonl' --exclude outputs/<run>/synth_teacher_tasks.jsonl --out outputs/<run>/rl_pool.jsonl --n 30000 --seed 0"""
 import argparse, collections, glob, json, random
 
 def _body(pid):

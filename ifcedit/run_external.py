@@ -1,6 +1,6 @@
 """Run a prior IFC-agent framework (ifcedit.frameworks.<name>) on IfcEdit generated tasks and score the IFC file it writes with the gated checkers.
 
-    python -m ifcedit.run_external --framework mcp4ifc --model deepseek-v4-flash --base-url http://host:30004/v1 --tasks <jsonl> --out outputs/E021/eval/heldout_MCP4IFC \
+    python -m ifcedit.run_external --framework mcp4ifc --model deepseek-v4-flash --base-url http://host:30004/v1 --tasks <jsonl> --out outputs/<run>/eval/heldout_MCP4IFC \
         [--workers 16] [--budget 20] [--max-tokens 16384] [--temperature 0] [--limit N] [--shard i/n]
 
 Same output layout and summary fields as ifcedit.run_tasks (trajectories/<task>.json with "summary", edited/<task>.ifc, results.jsonl, config.json), so

@@ -1,17 +1,16 @@
 #!/bin/bash
-# Multi-turn GRPO of the IfcEdit student (H001/E012). Runs INSIDE the verl container on a held node (8 cards), started as an srun
-# step of the hold job (see train/run_in_container.sh).
+# Multi-turn GRPO of the IfcEdit student. Runs inside the verl container on one GPU node (8 cards).
 # LoRA on the language model, hybrid FSDP2 actor + one vLLM engine per card, custom agent loop, rollout log-probs as old log-probs).
-# Start policy: E011 student seed 2 (merged). Episode, tools, reward: train/rl/agent_loop.py.
-#   RUN=smoke DATA=<dir with train/val.parquet> bash train/grpo_e012.sh [hydra overrides...]
-# E022 (27B student, 2026-11-04): TP=2 PPO_TOK=16384 SP=4 GPU_MEM=0.6 (defaults = the 9B values; the 9B runs are unchanged).
+# Start policy: the merged SFT student (MODEL). Episode, tools, reward: ifcedit/train/rl/agent_loop.py.
+#   MODEL=<merged SFT student> RUN=<name> DATA=<dir with train/val.parquet> bash ifcedit/train/rl/grpo.sh [hydra overrides...]
+# 27B student: TP=2 PPO_TOK=16384 SP=4 GPU_MEM=0.6 (defaults = the 9B values).
 set -euo pipefail
 R=${IFCGYM_ROOT:?set IFCGYM_ROOT to the repository root}
 C=$R
-O=$C/outputs/E012/grpo
+O=${OUT:-$C/outputs/grpo}
 D=${DATA:-$O/data}
-RUN=${RUN:-grpo_s2}
-MODEL=${MODEL:-$C/outputs/E011/runs/s2/merged}
+RUN=${RUN:-grpo}
+MODEL=${MODEL:?set MODEL to the merged SFT student}
 NGPU=$(echo "${CUDA_VISIBLE_DEVICES:?set CUDA_VISIBLE_DEVICES}" | tr ',' '\n' | grep -c .)
 unset ROCR_VISIBLE_DEVICES ZE_AFFINITY_MASK HIP_VISIBLE_DEVICES
 export HF_HUB_OFFLINE=1 WANDB_MODE=disabled TOKENIZERS_PARALLELISM=false HOME=/tmp/ac-home-$USER

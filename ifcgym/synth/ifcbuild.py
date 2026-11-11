@@ -1,4 +1,4 @@
-"""Synthetic buildings (H001, user 2026-10-21: 'floor plans -> whole buildings'): turn an abstract floor plan into a complete IFC
+"""Synthetic buildings: turn an abstract floor plan into a complete IFC
 model with the entities our tasks and checkers rely on - standard walls (axis + extruded profile), wall joints
 (IfcRelConnectsPathElements), openings and doors/windows placed relative to the wall, spaces with footprints that meet the wall
 faces, space boundaries on the walls, storeys stacked with slabs, property sets. Export 'styles' imitate real exports: units in
@@ -75,7 +75,7 @@ class Style:
                                 # wrapped in an IfcBooleanClippingResult like Revit walls under roofs - the clip plane here never cuts;
                                 # IfcPolygonalFaceSet like Revit 2022+ tessellated exports, IFC4 only - IFC2X3 falls back to brep)
     sparse: bool = False        # Revit-style sparse export: no IfcRelConnectsPathElements and no IfcRelSpaceBoundary (fantasy_* models)
-    # door / window / opening styles (E014; survey of the 7 non-evaluation ifc-bench models, outputs/E014/survey_fills.txt: every real
+    # door / window / opening styles (from a survey of the 7 non-evaluation ifc-bench models: every real
     # wall opening is an elevation profile extruded ACROSS the wall - rectangle with x along the wall, rectangle turned 90 degrees
     # (Revit), polyline (ArchiCAD hitos) or Brep / face set - and doors / windows carry shared type geometry (IfcMappedItem)).
     # The defaults reproduce the original synthetic buildings.
@@ -207,7 +207,7 @@ class Builder:
         storey.ObjectPlacement = _placement(f, self.building.ObjectPlacement, (0, 0, elevation), sc)
         H = plan.height
         walls = []
-        if plan.rooms:      # exterior flag from geometry (review 2026-10-24: the bounding-box rule mislabelled facades of non-rectangular plans)
+        if plan.rooms:      # exterior flag from geometry (the bounding-box rule mislabelled facades of non-rectangular plans)
             from shapely.geometry import Polygon as _Poly
             from ifcgym.geomext import external_flags
             for w, e in zip(plan.walls, external_flags([(w.p0, w.p1, w.thickness) for w in plan.walls], [_Poly(r.polygon).buffer(0) for r in plan.rooms if not (r.long_name and any(k in r.long_name.lower() for k in ("outdoor", "balcony", "terrace", "garden", "yard")))])):   # outdoor rooms are outside

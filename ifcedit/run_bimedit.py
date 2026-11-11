@@ -1,8 +1,8 @@
-"""Run a served model on BIM-Edit tasks with our CodeAct harness (H001/E002 baseline and later comparisons).
+"""Run a served model on BIM-Edit tasks with our CodeAct harness.
 
-    python -m ifcedit.run_bimedit --model gemma4-31b --feedback none --budget 20 --out outputs/E002 [--workers 4] [--tasks ids...]
+    python -m ifcedit.run_bimedit --model gemma4-31b --feedback none --budget 20 --out outputs/<run> [--workers 4] [--tasks ids...]
 
-Endpoint discovery: --base-url, else RESEARCH_SERVICE_<NAME> (set by `research.py job submit --needs <name>`), else
+Endpoint discovery: --base-url, else RESEARCH_SERVICE_<NAME>, else
 the RESEARCH_SERVICE_<NAME> environment variable. Writes outputs/<E>/edited/<task_id>.ifc, trajectories/<task_id>.json and runs.jsonl.
 Tasks: data/bimedit-runs/tasks.jsonl (BIM-Edit-Tasks revision 2dc6462); IFC files under data/bimedit/ (BIM-Edit revision 0ae510bd).
 """
@@ -52,7 +52,7 @@ def run_one(task: dict, client: OpenAI, model: str, out: str, budget: int, feedb
         return json.load(open(traj))["summary"]
     with tempfile.TemporaryDirectory(prefix=f"bimedit_{tid}_", dir=os.path.join(out, "tmp"), ignore_cleanup_errors=True) as wd:   # lustre rmtree race (ENOTEMPTY)
         sb = Sandbox(input_ifc=inp, workdir=wd, python=python, timeout_s=120.0, helpers=(protocol != "v1"), isolate=(protocol == "v3"))
-        fb = None  # feedback modes other than `none` are wired in E003 (checkers on BIM-Edit tasks have no intent spec)
+        fb = None  # feedback modes other than `none` are not wired for BIM-Edit (its tasks have no intent spec)
         def execute(code):    # protocol v2 (tools inspect / find / check_model + h.* helpers), same wiring as ifcedit.run_tasks
             r = sb.execute(code); r.work_path = sb.final_path(); return r
         ep = run_episode(client, model, tid, task["prompt"], execute, budget=budget, temperature=temperature, top_p=top_p,
@@ -87,7 +87,7 @@ def main() -> None:
     a = ap.parse_args()
     if a.no_think:
         EXTRA_BODY["chat_template_kwargs"] = {"enable_thinking": False}
-    if a.effort:   # 2026-11-08: Kimi-K3 reasoning_effort, as run_tasks --effort (the K3 benchmark rows use high, like its IfcEditBench row)
+    if a.effort:   # Kimi-K3 reasoning_effort, as run_tasks --effort (the K3 benchmark rows use high, like its IfcEditBench row)
         EXTRA_BODY["reasoning_effort"] = a.effort
     out = a.out if os.path.isabs(a.out) else os.path.join(os.getcwd(), a.out)
     for d in ("edited", "trajectories", "tmp"):

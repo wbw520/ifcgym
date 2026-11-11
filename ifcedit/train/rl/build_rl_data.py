@@ -1,4 +1,4 @@
-"""RL dataset for the E012 GRPO run (verl RLHFDataset parquet): one row per task, the evaluation prompt of protocol v3
+"""RL dataset for the GRPO run (verl RLHFDataset parquet): one row per task, the evaluation prompt of protocol v3
 (system = SYSTEM_PROMPT_V2, user = task prompt), agent_name = ifcedit_agent, the task record in extra_info.task.
 
     python train/rl/build_rl_data.py --tasks <tasks.jsonl> --out <dir> [--val <tasks.jsonl>]   (verl container: pandas)"""

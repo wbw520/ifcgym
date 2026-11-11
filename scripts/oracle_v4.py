@@ -14,7 +14,7 @@ tasks = [json.loads(l) for l in open(args[0]) if l.strip()]
 tasks = [t for t in tasks if t["template"][0] in "UDCRAM" and ("-" in t["template"]) and t["template"].split("-")[0] in ("U", "D", "C", "R", "A", "M")][:lim]
 res = collections.defaultdict(list)
 def rel_deps(f, t):
-    """Scripted relationships for the E010 cover templates: space boundary / connection for the new element, re-containment, connection."""
+    """Scripted relationships for the cover templates: space boundary / connection for the new element, re-containment, connection."""
     import ifcopenshell.api.spatial, ifcopenshell.guid
     oh = (f.by_type("IfcOwnerHistory") or [None])[0]
     new = None
@@ -89,7 +89,7 @@ def solve(f, sc, it, tpl, t):
         h.set_extrusion_depth(f, e, it["height"] / sc)
         if old_h is not None:   # keep the top: the extrusion grows upward, so move the slab down by the thickness change
             h.translate(f, e, [0, 0, -(it["height"] / sc - old_h)])
-    elif typ == "bbox":            # E010: every side that changes (x / y planes; z = extrusion depth with the bottom kept)
+    elif typ == "bbox":            # every side that changes (x / y planes; z = extrusion depth with the bottom kept)
         e = f.by_guid(it["guid"]); bb = h._mesh_bbox(e)
         for ax, name in ((0, "x"), (1, "y")):
             for side, want in (("min", it["lo"][ax]), ("max", it["hi"][ax])):
@@ -131,7 +131,7 @@ def solve(f, sc, it, tpl, t):
             e_ = f.by_guid(r_["guid"]); dz = it["z0"] / sc - h._mesh_bbox(e_)["min"][2]
             if abs(dz) > 1e-6:
                 h.translate(f, e_, [0, 0, dz])
-    elif typ == "create_wall_bbox":        # E010: centre line of the bbox along its long side, connected to the walls at its ends
+    elif typ == "create_wall_bbox":        # centre line of the bbox along its long side, connected to the walls at its ends
         lo, hi = np.array(it["lo"]) / sc, np.array(it["hi"]) / sc; dx, dy = hi[0] - lo[0], hi[1] - lo[1]
         if dx >= dy:
             p0, p1, th = np.array([lo[0], (lo[1] + hi[1]) / 2]), np.array([hi[0], (lo[1] + hi[1]) / 2]), dy
@@ -147,23 +147,23 @@ def solve(f, sc, it, tpl, t):
                 o_end = "ATSTART" if min(np.linalg.norm(oa - p0), np.linalg.norm(oa - p1)) < min(np.linalg.norm(ob - p0), np.linalg.norm(ob - p1)) else "ATEND"
                 n_end = "ATSTART" if min(np.linalg.norm(oa - p0), np.linalg.norm(ob - p0)) < min(np.linalg.norm(oa - p1), np.linalg.norm(ob - p1)) else "ATEND"
                 h.connect_walls(f, o, new, o_end, n_end)
-    elif typ == "set_thickness_side":     # E010: centred change, then shift by half the change towards n
+    elif typ == "set_thickness_side":     # centred change, then shift by half the change towards n
         w = f.by_guid(it["guid"]); t0 = h.wall_thickness_any(w) if hasattr(h, "wall_thickness_any") else h._wall_thickness(w)
         h.set_wall_thickness(f, it["guid"], it["thickness"] / sc)
         n = np.array(it["n"]); h.translate(f, w, [float(n[0]) * (it["thickness"] / sc - t0) / 2, float(n[1]) * (it["thickness"] / sc - t0) / 2, 0.0])
-    elif typ == "rehost_fill":            # E010: opening down to the new host and re-voided
+    elif typ == "rehost_fill":            # opening down to the new host and re-voided
         e = f.by_guid(it["guid"]); op = e.FillsVoids[0].RelatingOpeningElement; be = h._mesh_bbox(e); bo = h._mesh_bbox(op)
         cen = (np.array(be["min"][:2]) + np.array(be["max"][:2])) / 2; dxy = np.array(it["xy"]) / sc - cen; dz = it["zmin"] / sc - bo["min"][2]
         h.translate(f, op, [float(dxy[0]), float(dxy[1]), dz]); be2 = h._mesh_bbox(e)
         if np.linalg.norm((np.array(be2["min"][:2]) + np.array(be2["max"][:2])) / 2 - np.array(it["xy"]) / sc) > 0.01 / sc or abs(be2["min"][2] - be["min"][2] - dz) > 0.01 / sc:
             h.translate(f, e, [float(dxy[0]), float(dxy[1]), dz])     # fill not placed relative to the opening: move it too
         op.VoidsElements[0].RelatingBuildingElement = f.by_guid(it["host"])
-    elif typ == "opening_width":          # E010: both planes along the wall axis move by half the change
+    elif typ == "opening_width":          # both planes along the wall axis move by half the change
         e = f.by_guid(it["guid"]); op = e.FillsVoids[0].RelatingOpeningElement; bb = h._mesh_bbox(op); u = np.array(it["u"]); ax = 0 if abs(u[0]) > 0.5 else 1
         w0 = bb["max"][ax] - bb["min"][ax]; d = (it["width"] / sc - w0) / 2; nm = "xy"[ax]
         vec = [0.0, 0.0, 0.0]; vec[ax] = -d; h.shift_vertices_on_plane(f, op, nm, bb["min"][ax], vec); bb = h._mesh_bbox(op)
         vec = [0.0, 0.0, 0.0]; vec[ax] = d; h.shift_vertices_on_plane(f, op, nm, bb["max"][ax], vec)
-    elif typ == "create_slab_opening":    # E010: box opening through the slab
+    elif typ == "create_slab_opening":    # box opening through the slab
         import ifcopenshell.api.root, ifcopenshell.api.feature
         sl = f.by_guid(it["host"]); bb = h._mesh_bbox(sl); lo, hi = np.array(it["lo"]) / sc, np.array(it["hi"]) / sc; m = 0.05 / sc
         op = ifcopenshell.api.root.create_entity(f, ifc_class="IfcOpeningElement", name="Opening")
@@ -171,7 +171,7 @@ def solve(f, sc, it, tpl, t):
         prof = f.createIfcRectangleProfileDef("AREA", None, f.createIfcAxis2Placement2D(f.createIfcCartesianPoint([0.0, 0.0]), None), float(hi[0] - lo[0]), float(hi[1] - lo[1]))
         op.Representation = f.createIfcProductDefinitionShape(None, None, [f.createIfcShapeRepresentation(h._ctx(f, "Body"), "Body", "SweptSolid", [h._extrusion(f, prof, float(bb["max"][2] - bb["min"][2] + 2 * m))])])
         ifcopenshell.api.feature.add_feature(f, feature=op, element=sl)
-    elif typ == "space_footprint":        # E010: merge - delete the wall (and its openings) and the other room, then re-profile the kept room
+    elif typ == "space_footprint":        # merge - delete the wall (and its openings) and the other room, then re-profile the kept room
         for d_ in t.get("dependents", []):
             if d_["rule"] == "removed":
                 try:
@@ -199,7 +199,7 @@ def solve(f, sc, it, tpl, t):
                 ps = [float((c_ - a) @ u) for c_ in cs]; busy.append((min(ps), max(ps)))
         along = None; step = 0.05 / sc
         x = 0.1 / sc
-        if it.get("centre") is not None:       # E010: position given by the opening's bounding box
+        if it.get("centre") is not None:       # position given by the opening's bounding box
             along = float((np.array(it["centre"]) / sc - a) @ u) - W / 2; x = L
         while x + W <= L - 0.1 / sc:
             if all(x + W <= lo - 0.02 / sc or x >= hi + 0.02 / sc for lo, hi in busy):
@@ -220,19 +220,19 @@ def solve(f, sc, it, tpl, t):
                 h.connect_walls(f, o, new, o_end, n_end)
     elif typ == "create_slab":
         r_ = h.add_slab(f, it["storey"], (np.array(it["polygon"]) / sc).tolist(), it["thickness"] / sc, elevation=-it["thickness"] / sc)
-        if it.get("top") is not None:          # E010: slab on columns - top not at the storey level
+        if it.get("top") is not None:          # slab on columns - top not at the storey level
             e_ = f.by_guid(r_["guid"]); dz = it["top"] / sc - h._mesh_bbox(e_)["max"][2]
             if abs(dz) > 1e-6:
                 h.translate(f, e_, [0, 0, dz])
     elif typ == "create_column":
-        if "sx" in it:              # E010: rectangular section, base elevation
+        if "sx" in it:              # rectangular section, base elevation
             r_ = h.add_column(f, it["storey"], np.array(it["xy"]) / sc, 1.0, it["height"] / sc); col = f.by_guid(r_["guid"])
             ex = col.Representation.Representations[0].Items[0]; ex.SweptArea.XDim = it["sx"] / sc; ex.SweptArea.YDim = it["sy"] / sc
             if it.get("z0") is not None:
                 z_now = h._mesh_bbox(col)["min"][2]; h.translate(f, col, [0, 0, it["z0"] / sc - z_now])
         else:
             h.add_column(f, it["storey"], np.array(it["xy"]) / sc, it["size"] / sc, it["height"] / sc)
-    if typ in ("create_column", "create_slab", "translate", "create_wall_bbox", "create_space", "wall_axis", "space_footprint", "resize_height"):    # E010 relationships named in the task
+    if typ in ("create_column", "create_slab", "translate", "create_wall_bbox", "create_space", "wall_axis", "space_footprint", "resize_height"):    # relationships named in the task
         rel_deps(f, t)
     elif typ == "noop":
         pass
@@ -252,7 +252,7 @@ for t in tasks:
         elif it["type"] == "answer": it["value"] = (it["value"] * 1.5 + 1) if it["kind"] == "number" else ("0000000000000000000000" if it["kind"] == "guid" else [])
         else: it["type"] = "noop"
     try:
-        if it["type"] == "all":   # compound instruction (2026-10-26): solve every part in order; negative control leaves the last part undone
+        if it["type"] == "all":   # compound instruction: solve every part in order; negative control leaves the last part undone
             parts = it["parts"]; tpls = t["meta"]["parts"]; metas = t["meta"].get("part_meta") or [{} for _ in parts]
             todo = list(range(len(parts)))[:-1] if NEG else list(range(len(parts)))
             for i_ in todo:
@@ -261,7 +261,7 @@ for t in tasks:
             final = solve(f, sc, it, tpl, t)
         out = os.path.join(tempfile.mkdtemp(prefix="oracle_v4_"), "e.ifc"); f.write(out)
         r = check(t["ifc"], out, t, final)
-        shutil.rmtree(os.path.dirname(out), ignore_errors=True)   # 29,768 leftover temp dirs on lustre, 2026-10-23
+        shutil.rmtree(os.path.dirname(out), ignore_errors=True)   # no leftover temp dirs
         res[tpl].append((not r.strict) if NEG else r.strict)
         if NEG and r.strict:
             print(f"NEG-PASSED {t['task_id']}: a wrong solution was accepted | {r.details['intent'][:120]}", flush=True)

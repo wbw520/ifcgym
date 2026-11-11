@@ -1,15 +1,15 @@
-"""Held-out test list for E013 (user 2026-10-30: covering as much as possible, aligned with the training data types, 1500 tasks).
+"""Held-out test list (the 1,500-task core of IfcEditBench): covering as much as possible, aligned with the training data types.
 Allocation follows the composition of the student's SFT training set (element/operation kinds of train/build_e010_mix.py):
   1. kind quota = n x the kind's training share, at least --floor tasks, never more than the kind has available (water-filling);
   2. within a kind, variant quota in proportion to the variant's training count, at least 1 per available variant (coverage);
   3. within a variant, tasks one at a time from the building with the fewest tasks so far (buildings balanced).
-    python scripts/make_heldout.py --tasks 'outputs/E013/heldout_gate/*/survivors.jsonl' --out heldout.jsonl --n 1500 --floor 30 --seed 0"""
+    python scripts/make_heldout.py --tasks 'outputs/heldout_gate/*/survivors.jsonl' --out heldout.jsonl --n 1500 --floor 30 --seed 0"""
 import argparse, collections, glob, json, math, os, random, sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "train"))
 from build_e010_mix import element, operation      # noqa: E402
 
-TRAIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "outputs/E011/sft_data_final/train.parquet")
+TRAIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "outputs/sft/data/train.parquet")
 
 
 def kind(tpl):

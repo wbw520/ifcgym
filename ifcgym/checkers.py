@@ -1,4 +1,4 @@
-"""Gated checkers of IfcEdit (DESIGN.md §1): validity, intent, dependency, preservation, under-edit. All checks compare the input
+"""Gated checkers of IfcEdit: validity, intent, dependency, preservation, under-edit. All checks compare the input
 model with the agent's final model; the task spec (tasks/generate.py) says what was asked, which entities may change (allowed set)
 and which dependents must follow. Nothing here needs a target file: several legal solutions pass.
 
@@ -60,8 +60,7 @@ def schema_errors(f: ifcopenshell.file) -> list[str]:
 
 
 def decomposition_cycle(f: ifcopenshell.file) -> str | None:
-    """GlobalId of an object that is its own IfcRelAggregates / IfcRelNests ancestor, else None. A Gemma 4 31B episode (E021, task
-    fantasy_office_building_3-M-compound-3-0584-s2, 2026-11-04) aggregated a storey into itself; ifcopenshell.geom.create_shape then
+    """GlobalId of an object that is its own IfcRelAggregates / IfcRelNests ancestor, else None. A Gemma 4 31B episode aggregated a storey into itself; ifcopenshell.geom.create_shape then
     recursed forever in C++ and the check never returned, so a cyclic decomposition is reported as a validity failure before any geometry."""
     parents: dict[int, list] = {}
     for cls in ("IfcRelAggregates", "IfcRelNests"):
@@ -298,7 +297,7 @@ def _height_equals(after: ifcopenshell.file, guid: str, height: float, tol: floa
         return False, f"no geometry: {e}"
     if top is not None:   # v4 slab thickness: the top face must stay where it was
         return abs(h - height) <= tol and abs(float(v[:, 2].max()) - top) <= tol, f"height {h:.3f} vs {height}, top {float(v[:, 2].max()):.3f} vs {top}"
-    if bottom is not None:   # E010: the bottom must stay where it was (relative height change of a window / space)
+    if bottom is not None:   # the bottom must stay where it was (relative height change of a window / space)
         return abs(h - height) <= tol and abs(float(v[:, 2].min()) - bottom) <= tol, f"height {h:.3f} vs {height}, bottom {float(v[:, 2].min()):.3f} vs {bottom}"
     return abs(h - height) <= tol, f"height {h:.3f} vs {height}"
 
@@ -384,7 +383,7 @@ def _create_fill(before, after, intent, scale):
                 msgs.append(f"sill {sill:.3f} vs {intent['sill']}")
     except Exception as ex:  # noqa: BLE001
         msgs.append(f"(position check skipped: {type(ex).__name__})")
-    if intent.get("centre") is not None:   # E010: position given by the opening's bounding box -> plan centre of the new opening
+    if intent.get("centre") is not None:   # position given by the opening's bounding box -> plan centre of the new opening
         ob = _bbox_m(op, scale) or bb
         cxy = (ob[0][:2] + ob[1][:2]) / 2; d = float(np.linalg.norm(cxy - np.array(intent["centre"])))
         ok = ok and d <= max(tol, 0.05); msgs.append(f"centre {np.round(cxy, 3).tolist()} vs {intent['centre']} ({d:.3f} m)")
@@ -439,12 +438,12 @@ def _create_box(before, after, intent, scale):
             ok = pm and abs((hi[2] - lo[2]) - intent["thickness"]) <= tol and st_ok and top_ok
             return ok, f"new slab {e.GlobalId}: {pmsg}, thickness {hi[2]-lo[2]:.3f} vs {intent['thickness']}, top {hi[2]:.3f} vs {intent.get('top')}, in storey {st_ok}"
         c = (lo[:2] + hi[:2]) / 2; size = float(max(hi[0] - lo[0], hi[1] - lo[1]))
-        if "sx" in intent:      # E010 coverage: rectangular cross-section given as bounding-box extents in X and Y
+        if "sx" in intent:      # rectangular cross-section given as bounding-box extents in X and Y
             size_ok = abs(float(hi[0] - lo[0]) - intent["sx"]) <= tol and abs(float(hi[1] - lo[1]) - intent["sy"]) <= tol
             smsg = f"extent {hi[0]-lo[0]:.3f} x {hi[1]-lo[1]:.3f} vs {intent['sx']} x {intent['sy']}"
         else:
             size_ok = abs(size - intent["size"]) <= tol; smsg = f"size {size:.3f}"
-        z_ok = intent.get("z0") is None or abs(float(lo[2]) - intent["z0"]) <= tol    # E010: base elevation of the column
+        z_ok = intent.get("z0") is None or abs(float(lo[2]) - intent["z0"]) <= tol    # base elevation of the column
         ok = np.linalg.norm(c - np.array(intent["xy"])) <= tol and size_ok and abs((hi[2] - lo[2]) - intent["height"]) <= tol and st_ok and z_ok
         return ok, f"new column {e.GlobalId}: centre {np.round(c,3).tolist()} vs {intent['xy']}, {smsg}, height {hi[2]-lo[2]:.3f}, base {lo[2]:.3f} vs {intent.get('z0')}, in storey {st_ok}"
     return False, f"no new {cls}"
@@ -537,7 +536,7 @@ def _create_space(before, after, intent, scale):
             continue
         lo, hi = bb
         pm, pmsg = _poly_match(e, intent["polygon"], tol_frac=0.05, tol_abs=0.1)
-        z_ok = intent.get("z0") is None or abs(float(lo[2]) - intent["z0"]) <= tol    # E010: base elevation of a space given by its bbox
+        z_ok = intent.get("z0") is None or abs(float(lo[2]) - intent["z0"]) <= tol    # base elevation of a space given by its bbox
         ok = pm and abs((hi[2] - lo[2]) - intent["height"]) <= tol and ((not intent.get("storey")) or _in_storey(e, intent["storey"])) and z_ok
         return ok, f"new space {e.GlobalId}: {pmsg}, height {hi[2]-lo[2]:.3f} vs {intent['height']}, base {lo[2]:.3f} vs {intent.get('z0')}, in storey {_in_storey(e, intent.get('storey'))}"
     return False, "no new IfcSpace"
@@ -572,7 +571,7 @@ def _answer(intent, final_text: str | None):
 
 def check_intent(before, after, intent: dict, scale: float, final_text: str | None = None) -> tuple[bool, str]:
     t = intent["type"]
-    if t == "all":   # compound instruction (E009, 2026-10-26): every part must hold; the message lists each part
+    if t == "all":   # compound instruction: every part must hold; the message lists each part
         res = [check_intent(before, after, p_, scale, final_text) for p_ in intent["parts"]]
         return all(r_[0] for r_ in res), f"parts {sum(1 for r_ in res if r_[0])}/{len(res)} | " + " | ".join(f"{i_ + 1}:{'ok' if r_[0] else 'FAIL'} {r_[1][:100]}" for i_, r_ in enumerate(res))
     if t == "create_fill":
@@ -609,7 +608,7 @@ def check_intent(before, after, intent: dict, scale: float, final_text: str | No
     if t == "create_space":
         return _create_space(before, after, intent, scale)
     if t in ("create_wall_bbox", "set_thickness_side", "rehost_fill", "opening_width", "create_slab_opening", "space_footprint"):
-        return _e010_intent(before, after, intent, scale)
+        return _coverage_intent(before, after, intent, scale)
     return False, f"unknown intent {t}"
 
 
@@ -618,8 +617,8 @@ def _fill_opening(f, guid):
     return e, (r[0].RelatingOpeningElement if r else None)
 
 
-def _e010_intent(before, after, intent, scale):
-    """E010 coverage intents (2026-10-26), all judged on meshes in metres."""
+def _coverage_intent(before, after, intent, scale):
+    """Coverage intents, all judged on meshes in metres."""
     t = intent["type"]; tol = intent.get("tol", 0.05)
     if t == "create_wall_bbox":       # a new wall whose body fills the given bounding box (representation-independent)
         new = _added_of(before, after, ("IfcWall", "IfcWallStandardCase"))
@@ -691,13 +690,12 @@ def _e010_intent(before, after, intent, scale):
     return False, f"unknown intent {t}"
 
 
-# names used by the generator before commit 740fa37 (outputs/tasks/wbdg_office.jsonl, 10 frozen dev-val tier-3 tasks, was not regenerated):
-# same rules, same keys - resolved here so frozen task files need not change (incident 2026-10-20, research log)
+# rule names used by older task files: same rules, same keys - resolved here so those files need not change
 _RULE_ALIASES = {"space_face_follows": "space_meets_wall", "boundary_follows": "boundary_on_wall"}
 
 
-def _e010_rule(before, after, d, scale):
-    """E010 coverage rules (2026-10-26)."""
+def _coverage_rule(before, after, d, scale):
+    """Coverage rules (column / slab / room / opening edits)."""
     r = d["rule"]
     def conns(e):
         out = set()
@@ -731,7 +729,7 @@ def check_dependents(before, after, deps: list[dict], scale: float, eg=None) -> 
     msgs = []; ok = True
     for d in deps:
         r = d["rule"]
-        if r == "new_in_storey":   # E009: every NEW element of class d['cls'] is contained in the storey d['guid'] (IfcRelContainedInSpatialStructure)
+        if r == "new_in_storey":   # every NEW element of class d['cls'] is contained in the storey d['guid'] (IfcRelContainedInSpatialStructure)
             new = _added_of(before, after, (d.get("cls", "IfcDoor"),))
             good = bool(new)
             for e in new:
@@ -747,21 +745,21 @@ def check_dependents(before, after, deps: list[dict], scale: float, eg=None) -> 
                     if other is not None and other.GlobalId == d["guid"]:
                         good = True
             ok &= good; msgs.append(f"{d['guid']}:{r}:{'ok' if good else 'FAIL'}"); continue
-        if r == "space_boundary_new":   # E010: an IfcRelSpaceBoundary relates the space d['guid'] to the NEW element of class d['cls']
+        if r == "space_boundary_new":   # an IfcRelSpaceBoundary relates the space d['guid'] to the NEW element of class d['cls']
             new = _added_of(before, after, (d.get("cls", "IfcColumn"),)); good = False
             for e in new:
                 for rel in getattr(e, "ProvidesBoundaries", None) or []:
                     if rel.RelatingSpace is not None and rel.RelatingSpace.GlobalId == d["guid"]:
                         good = True
             ok &= good; msgs.append(f"{d['guid']}:{r}:{'ok' if good else 'FAIL'}"); continue
-        if r == "in_storey":            # E010: the existing element d['el'] is contained in the storey d['guid'] and in no other structure
+        if r == "in_storey":            # the existing element d['el'] is contained in the storey d['guid'] and in no other structure
             try:
                 cs = [rel.RelatingStructure.GlobalId for rel in (after.by_guid(d["el"]).ContainedInStructure or []) if rel.RelatingStructure is not None]
                 good = cs == [d["guid"]]; m = f"contained in {cs}"
             except Exception:  # noqa: BLE001
                 good, m = False, "element missing"
             ok &= good; msgs.append(f"{d['guid']}:{r}:{'ok' if good else 'FAIL'}({m})"); continue
-        if r == "rel_connects":         # E010: existing elements d['el'] and d['guid'] are connected by an IfcRelConnectsElements (any subtype)
+        if r == "rel_connects":         # existing elements d['el'] and d['guid'] are connected by an IfcRelConnectsElements (any subtype)
             good = False
             try:
                 e = after.by_guid(d["el"])
@@ -772,7 +770,7 @@ def check_dependents(before, after, deps: list[dict], scale: float, eg=None) -> 
                 good = False
             ok &= good; msgs.append(f"{d['guid']}:{r}:{'ok' if good else 'FAIL'}"); continue
         if r in ("not_connected", "space_boundary_with", "new_space_bounds", "opening_covers"):
-            good, m = _e010_rule(before, after, d, scale); ok &= good; msgs.append(f"{d['guid']}:{r}:{'ok' if good else 'FAIL'}({m})"); continue
+            good, m = _coverage_rule(before, after, d, scale); ok &= good; msgs.append(f"{d['guid']}:{r}:{'ok' if good else 'FAIL'}({m})"); continue
         if r == "unchanged":       # v4: an element that "must remain": present and not modified at all (attributes, geometry, placement)
             if eg is None:
                 good, m = _deleted(after, d["guid"])[0] is False, "present"
@@ -799,7 +797,7 @@ def check_dependents(before, after, deps: list[dict], scale: float, eg=None) -> 
                 g1 = _gap(after.by_guid(d["guid"]), after.by_guid(d["other"]))
                 if g0 is None or g1 is None:
                     good, m = False, "missing geometry"
-                else:   # surface gap (2026-10-20: was corner-vertex distance, which grew when a stem wall slid along a wall face)
+                else:   # surface gap (was corner-vertex distance, which grew when a stem wall slid along a wall face)
                     good = g1 <= g0 + d.get("tol", 0.02) + 1e-6
                     m = f"gap before {g0:.4f} after {g1:.4f}"
             except Exception as e:  # noqa: BLE001
@@ -894,7 +892,7 @@ def _cache_valid(f, graph, n_sample: int = 24) -> bool:
 @functools.lru_cache(maxsize=8)
 def before_model(before_path: str):
     """(graph, schema_errors) of an ORIGINAL model - pure data, cached in memory and on disk. The ifcopenshell.file object is NOT
-    cached: run_tasks checks from several threads at once and ifcopenshell file objects are not thread-safe (2026-10-19: a shared
+    cached: run_tasks checks from several threads at once and ifcopenshell file objects are not thread-safe (a shared
     object produced hundreds of phantom side effects and false intent failures in every concurrent run)."""
     from ifcgym.ifcgraph import build_graph
     st = os.stat(before_path); key = hashlib.sha1(f"{before_path}|{st.st_size}|{int(st.st_mtime)}|v2".encode()).hexdigest()
@@ -907,7 +905,7 @@ def before_model(before_path: str):
                 graph, errs = pickle.load(fh)
             if _cache_valid(f, graph):
                 return graph, errs
-            os.remove(cp)      # built under a thread-contaminated condition (seen 2026-10-19): rebuild
+            os.remove(cp)      # built under a thread-contaminated condition: rebuild
         except Exception:  # noqa: BLE001
             pass
     graph = build_graph(f); errs = set(schema_errors(f))
@@ -928,7 +926,7 @@ def check(before_path: str, after_path: str, spec: dict, final_text: str | None 
     before_graph, err_before = before_model(before_path)
     before = ifcopenshell.open(before_path)          # a fresh, thread-private file object every time
     try:
-        if not os.path.exists(after_path) and os.path.exists(after_path + ".gz"):   # archived outputs (edited IFCs gzipped 2026-10-23)
+        if not os.path.exists(after_path) and os.path.exists(after_path + ".gz"):   # archived outputs (edited IFCs gzipped)
             import gzip, tempfile
             with gzip.open(after_path + ".gz", "rb") as gz, tempfile.NamedTemporaryFile("wb", suffix=".ifc", delete=False) as tf:
                 tf.write(gz.read()); after_path = tf.name
@@ -936,7 +934,7 @@ def check(before_path: str, after_path: str, spec: dict, final_text: str | None 
     except Exception as e:  # noqa: BLE001
         return CheckReport(False, False, False, False, False, 0, 1, {"validity": f"unreadable: {e}"})
     cyc = decomposition_cycle(after)
-    if cyc:   # non-terminating geometry otherwise; treated like an unreadable output (2026-11-04)
+    if cyc:   # non-terminating geometry otherwise; treated like an unreadable output
         return CheckReport(False, False, False, False, False, 0, 1, {"validity": f"decomposition cycle at {cyc}", "new_errors": [f"decomposition cycle at {cyc}"]})
     scale = unit_scale(before)
     from ifcgym.ifcgraph import edit_graph_from
@@ -958,7 +956,7 @@ def check(before_path: str, after_path: str, spec: dict, final_text: str | None 
         allowed |= added_ok
     side = [g for g in touched if g not in allowed]
     # relationship-level side effects: a relation added/removed between elements that are all outside the allowed set (e.g. a space
-    # boundary or a wall connection of unrelated elements deleted) - invisible to the node diff (review 2026-10-22)
+    # boundary or a wall connection of unrelated elements deleted) - invisible to the node diff
     rel_side = [k for k, e in list(eg.rel_added.items()) + list(eg.rel_removed.items()) if e.src not in allowed and e.dst not in allowed]
     side += [f"rel:{k[0]}:{k[1]}->{k[2]}" for k in rel_side]
     preservation = not side

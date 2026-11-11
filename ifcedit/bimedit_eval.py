@@ -1,8 +1,7 @@
 """Re-implementation of the BIM-Edit scorer (arXiv:2606.20146 Sec. 3.2, Eqs. 1-4) with the released evaluator defaults
-(data/bimedit-runs/*/eval/resolved_defaults.json). Validated in pilot H001/E001 against the official per-task scores of the
-released edited outputs; every deviation found there is recorded in DESIGN.md.
+(data/bimedit-runs/*/eval/resolved_defaults.json). Validated against the official per-task scores of the released edited outputs.
 
-    python -m ifcedit.bimedit_eval --run outputs/E002 [--tasks ...] [--workers 8] [--report]
+    python -m ifcedit.bimedit_eval --run outputs/<run> [--tasks ...] [--workers 8] [--report]
     python -m ifcedit.bimedit_eval --official data/bimedit-runs/claude-sonnet --report      # validation against per_task.csv
 
 Score per task: S = mean(S_geo, S_sem, S_topo) on the edit graph G_delta (input -> ground truth) vs (input -> prediction).

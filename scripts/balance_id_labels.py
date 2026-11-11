@@ -1,4 +1,4 @@
-"""Balance how GlobalIds are introduced in paraphrased prompts (2026-10-23, user): the LLM rewrite keeps the template's word
+"""Balance how GlobalIds are introduced in paraphrased prompts: the LLM rewrite keeps the template's word
 "GlobalId" almost always, while BIM-Edit writes "with ID X" / "(X)" and BIBIMBAP "with id X" / 'GlobalId = "X"'. Deterministic
 per-task relabelling (seeded by task_id), ids themselves untouched; the original rewrite is kept in prompt_pre_label.
 Target mix: ID 35 %, id 25 %, GlobalId 25 %, GUID / parenthetical 15 %.

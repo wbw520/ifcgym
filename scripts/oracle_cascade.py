@@ -1,4 +1,4 @@
-"""Helper ceiling test (E007): a scripted agent performs the cascade recipe with ONLY the h.* primitives on generated tasks and the
+"""Helper ceiling test: a scripted agent performs the cascade recipe with ONLY the h.* primitives on generated tasks and the
 frozen checkers judge it. Measures whether the helpers suffice when the decisions are right (per project / profile type).
     python scripts/oracle_cascade.py <tasks.jsonl> [--limit N]"""
 import json, os, sys, tempfile, shutil, traceback
@@ -48,7 +48,7 @@ for t in tasks:
         log = cascade(f, t)
         out = os.path.join(tempfile.mkdtemp(prefix="oracle_"), "edited.ifc"); f.write(out)
         r = check(t["ifc"], out, t)
-        shutil.rmtree(os.path.dirname(out), ignore_errors=True)   # temp dir cleanup 2026-10-23
+        shutil.rmtree(os.path.dirname(out), ignore_errors=True)   # temp dir cleanup
         fails = [x.strip().split(":")[1] for x in r.details["dependency"].split(";") if ":FAIL" in x]
         res.append((t["project"], t["tier"], r.strict, r.intent, r.dependency, r.preservation, fails, log))
         print(f"{t['task_id']:40s} strict={r.strict} intent={r.intent} dep={r.dependency} pres={r.preservation} side={r.side_effects} fails={sorted(set(fails))} {log}", flush=True)

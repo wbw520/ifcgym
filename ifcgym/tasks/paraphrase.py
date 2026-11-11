@@ -1,4 +1,4 @@
-"""Rewrite templated task prompts into natural language with an LLM (user 2026-10-22: ALL prompts, training and dev-val, use the
+"""Rewrite templated task prompts into natural language with an LLM (ALL prompts, training and dev-val, use the
 rewritten phrasing). The program keeps the task definition and the truth; the model only changes the wording.
 
     python -m ifcgym.tasks.paraphrase --model deepseek-v4-flash --base-url http://host:30004/v1 --tasks 'outputs/tasks_synth2k_v3/*.jsonl' --out outputs/tasks_synth2k_v3p --workers 16
@@ -17,7 +17,7 @@ import random
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-GUID = re.compile(r"(?<![0-9A-Za-z_$])[0-9A-Za-z_$]{22}(?![0-9A-Za-z_$])")   # \b fails next to $ and _ (found by lint 2026-10-22)
+GUID = re.compile(r"(?<![0-9A-Za-z_$])[0-9A-Za-z_$]{22}(?![0-9A-Za-z_$])")   # \b fails next to $ and _
 NUM = re.compile(r"-?\d+(?:\.\d+)?")
 STYLES = [
     "a facility manager writing a short work request to a colleague",
@@ -48,7 +48,7 @@ def check(orig: str, new: str) -> str | None:
         return "length out of range"
     if "GlobalId" in orig and "GlobalId" not in new and "global id" not in new.lower() and "id " not in new.lower():
         return "identifiers must still be introduced as ids"
-    from ifcgym.tasks.fidelity import problems      # review 2026-10-24: left/right and other polarity words
+    from ifcgym.tasks.fidelity import problems      # left/right and other polarity words
     pr = problems(orig, new)
     if pr:
         return "; ".join(pr) + " (keep every direction / side / superlative word of the original)"
@@ -73,7 +73,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True); ap.add_argument("--base-url", required=True, help="one URL or a comma-separated list of replica URLs"); ap.add_argument("--tasks", required=True); ap.add_argument("--out", required=True)
     ap.add_argument("--workers", type=int, default=16); ap.add_argument("--seed", type=int, default=0); ap.add_argument("--temperature", type=float, default=0.9); ap.add_argument("--limit", type=int, default=None)
-    ap.add_argument("--effort", default=None, help="reasoning_effort for reasoning models (Kimi-K3: low/high/max; user 2026-10-24: paraphrase with K3)")
+    ap.add_argument("--effort", default=None, help="reasoning_effort for reasoning models (Kimi K3: low/high/max)")
     ap.add_argument("--max-tokens", type=int, default=600, help="raise for reasoning models (the reasoning counts against it)")
     ap.add_argument("--attempts", type=int, default=2); ap.add_argument("--ids", default=None, help="file of task ids: rewrite only these, copy the others unchanged")
     a = ap.parse_args(); extra = {"reasoning_effort": a.effort} if a.effort else {}; only = set(open(a.ids).read().split()) if a.ids else None
@@ -94,7 +94,7 @@ def main() -> None:
             rng = random.Random(f"{a.seed}:{t['task_id']}")
             new, ok = rewrite(clients[hash(t["task_id"]) % len(clients)], a.model, src, rng, a.temperature, a.max_tokens, extra, a.attempts)
             row = {k: v for k, v in t.items() if k != "prompt_pre_label"}   # a stale pre-label copy of an EARLIER paraphrase would make
-            # scripts/balance_id_labels.py relabel that old text instead of this rewrite (bug found 2026-10-25 on the E-class re-paraphrase)
+            # scripts/balance_id_labels.py relabel that old text instead of this rewrite (on the E-class re-paraphrase)
             return {**row, "prompt": new, "prompt_template": src, "paraphrased": ok, "paraphrase_model": os.path.basename(a.model.rstrip("/")) if ok else None}
         with ThreadPoolExecutor(max_workers=a.workers) as ex:
             rows = list(ex.map(one, tasks))

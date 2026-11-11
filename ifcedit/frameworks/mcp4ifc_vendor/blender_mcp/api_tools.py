@@ -25,7 +25,7 @@ Integration:
     maintaining full IFC compliance and Blender integration.
 """
 
-# Route-2 port (IfcEdit, 2026-11-03): `from mcp.server.fastmcp import Context`, `from ..server import logger, get_blender_connection`
+# Route-2 port (IfcEdit): `from mcp.server.fastmcp import Context`, `from ..server import logger, get_blender_connection`
 # and `from ..mcp_instance import mcp` are replaced by the in-process registry / worker connection of runtime.py. The `ctx: Context`
 # parameter was removed from every tool signature (FastMCP hid it from the tool schema anyway); the docstrings are untouched.
 # Dropped tools: execute_blender_code, get_blender_object_info, get_selected_objects (Blender-only). Nothing else was edited.

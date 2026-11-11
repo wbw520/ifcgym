@@ -1,4 +1,4 @@
-"""Widen `allowed` of wall-move tasks with GEOMETRIC neighbours (2026-10-23): walls whose axis end touches the moved wall and spaces
+"""Widen `allowed` of wall-move tasks with GEOMETRIC neighbours: walls whose axis end touches the moved wall and spaces
 whose footprint edge lies on one of its faces. In buildings with full relations these coincide with the relation-based neighbours
 already listed; in sparse-relation buildings (no IfcRelConnectsPathElements / IfcRelSpaceBoundary) nothing was listed, so a teacher
 that tidied a touching wall was charged with a side effect. Prompts, intents and dependents are unchanged.

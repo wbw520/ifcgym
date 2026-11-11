@@ -1,4 +1,4 @@
-"""B007 MCP4IFC (Nithyanantham et al., arXiv 2511.05533; code Show2Instruct/ifc-bonsai-mcp @ 6215493, MIT) on an OpenAI-compatible backbone.
+"""MCP4IFC (Nithyanantham et al., arXiv 2511.05533; code Show2Instruct/ifc-bonsai-mcp @ 6215493, MIT) on an OpenAI-compatible backbone.
 
 The paper's "agent" is Claude Desktop's generic tool-use loop over the FastMCP server; the repository has no client, system prompt
 or step cap. This module is that loop, kept minimal: system prompt = the FastMCP `instructions` string + the repository's only prompt
@@ -30,7 +30,7 @@ TOOLS, ARG_MODELS = build(mcp.tools)
 TOOL_NAMES = list(mcp.tools)
 API_RETRIES = 3
 RETRY_DELAY_S = 30.0
-TOOL_OUTPUT_CAP = int(os.environ.get("MCP4IFC_TOOL_OUTPUT_CAP", "200000"))   # characters kept of one tool result (env override, 2026-11-04: 65,536-token serving window) (client-side cap, ours: the original Claude Desktop client has no documented limit; get_scene_info
+TOOL_OUTPUT_CAP = int(os.environ.get("MCP4IFC_TOOL_OUTPUT_CAP", "200000"))   # characters kept of one tool result (env override, 65,536-token serving window) (client-side cap, ours: the original Claude Desktop client has no documented limit; get_scene_info
                             # on a real 440-product building returns ~1 MB, more than any context window; the cut is marked in the transcript)
 MIN_MAX_TOKENS = 1024   # on a context-length rejection max_tokens is halved down to this before the episode is given up (vLLM checks prompt + max_tokens <= max_model_len)
 _CONTEXT_ERR = ("context length", "maximum context", "context_length", "max_model_len", "too long", "exceeds the model", "reduce the length")

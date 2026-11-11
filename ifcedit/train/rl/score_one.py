@@ -1,4 +1,4 @@
-"""Score one RL episode with the frozen checkers (H001/E012). Runs under the IFC venv of the verl container (.venvs/ifc-verl):
+"""Score one RL episode with the frozen checkers. Runs under the IFC venv of the verl container (.venvs/ifc-verl):
     python -I train/rl/score_one.py <task.json> <edited.ifc> <final_text.txt>    -> one JSON line on stdout"""
 import json
 import os

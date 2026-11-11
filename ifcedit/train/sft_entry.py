@@ -22,9 +22,9 @@ import verl.workers.engine.fsdp.transformer_impl as _ti  # noqa: E402
 if hasattr(_ti, "get_init_weight_context_manager"):
     _ti.get_init_weight_context_manager = _cpu_init
 
-# Patch 2 (2026-10-25): verl 0.9.0's SFT trainer never uses trainer.seed - the DistributedSampler shuffles with its default seed 0 and
-# no RNG is seeded, so "seed 1" and "seed 2" trained on the same order from the same LoRA init (E008 first launch: identical losses to
-# 3 decimals; E007's two seeds were affected the same way). Seed every RNG and the sampler from trainer.seed (same on all ranks).
+# Patch 2: verl 0.9.0's SFT trainer never uses trainer.seed - the DistributedSampler shuffles with its default seed 0 and
+# no RNG is seeded, so two seeds would train on the same order from the same LoRA init. Seed every RNG and the sampler from
+# trainer.seed (same on all ranks).
 import random  # noqa: E402
 import sys  # noqa: E402
 

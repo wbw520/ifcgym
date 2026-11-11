@@ -1,5 +1,4 @@
-"""CubiCasa5K floor plan (model.svg) -> Plan for ifcbuild (H001 synthetic buildings, user 2026-10-21: layouts from a real
-floor-plan dataset, the IFC construction by program).
+"""CubiCasa5K floor plan (model.svg) -> Plan for ifcbuild.
 
 CubiCasa5K (Zenodo 2613548, CC BY-NC-SA 4.0; data/cubicasa5k/, training-data use only): each sample folder has model.svg with
 polygons: class "Wall" (wall outlines as quadrilaterals), "Door"/"Window" (opening outlines), "Space <RoomType>" (room interior

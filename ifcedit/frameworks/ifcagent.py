@@ -1,8 +1,8 @@
-"""IFC-Agent (Gao, Hu, Chai, Weng, Li, 2026, Automation in Construction 186:106888) - Mode I reproduction, baseline B008.
+"""IFC-Agent (Gao, Hu, Chai, Weng, Li, 2026, Automation in Construction 186:106888) - Mode I reproduction.
 
 run(prompt, ifc_path, workdir, client, model, budget, max_tokens, temperature) -> dict per ifcedit.frameworks.__init__.
 
-What is reproduced (paper Sec. 3-5, Table 2, Fig. 4/5/8/9, Appendix C/D; details in scratchpad/ifcagent_brief.md and IFCAGENT.md):
+What is reproduced (paper Sec. 3-5, Table 2, Fig. 4/5/8/9, Appendix C/D; details in IFCAGENT.md):
   Main Agent  : LoadIFCFile -> RewriteIfNeeded -> QueryMemory -> TaskDecompositionAgent (LLM, Fig. 9 principles) -> a text-ReAct loop
                 (max 25 steps) that, per subtask, resolves the target entities (GlobalIds in the query, GetGlobalIdsByAttributeValue, or
                 the previous subtask's results = "working scope"), picks ONE of the 7 Sequential*Executors with the Fig. 8 table, and finally

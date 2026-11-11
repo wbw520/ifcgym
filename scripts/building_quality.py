@@ -1,4 +1,4 @@
-"""Quality metrics for every synthetic building (user 2026-10-22: select high-quality ones). Writes <root>/quality.jsonl with one
+"""Quality metrics for every synthetic building (select high-quality ones). Writes <root>/quality.jsonl with one
 record per building: plan metrics (rooms, areas, fragments, overlaps, door connectivity), IFC metrics (schema errors, boundaries
 per space, connections per wall, stairs) and hard flags. Run inside the python:3.12 container; shardable.
     python scripts/building_quality.py --root <root> --shard 0 --nshards 4"""

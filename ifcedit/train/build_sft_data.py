@@ -1,7 +1,7 @@
 """Build the SFT dataset from teacher episodes (run_tasks trajectories): keep strict-passing episodes, drop tool calls that
 errored (step filter), and write verl-style parquet with a `messages` column (system / user / assistant(tool_calls) / tool ...).
 
-    python train/build_sft_data.py --runs outputs/E004/teacher outputs/E004/teacher_b --out outputs/E005/data --val-projects fzk_house wbdg_office
+    python train/build_sft_data.py --runs outputs/teacher/<run> [...] --out outputs/sft/data --val-projects fzk_house wbdg_office
 Leakage checks: every episode's project must be a DEVELOPMENT project (configs/splits/dev_ids.txt); val = held-out dev projects.
 """
 from __future__ import annotations
@@ -20,7 +20,7 @@ from ifcedit.agent import prune_messages, _DSML_BLOCK, _TEXT_CALL  # noqa: E402 
 
 
 def _clean_text(content: str) -> str:
-    """Older trajectories (before 2026-10-20) kept the raw DSML / Gemma text tool-call markup in the assistant content next to the
+    """Older trajectories kept the raw DSML / Gemma text tool-call markup in the assistant content next to the
     parsed tool_calls; the student must not learn to emit it."""
     return _DSML_BLOCK.sub("", _TEXT_CALL.sub("", content or "")).rstrip()
 
@@ -32,7 +32,7 @@ DEV = {l.strip().split(":")[1] for l in open(f"{ROOT}/configs/splits/dev_ids.txt
 def _with_params(tc: dict) -> dict:
     """Qwen3.5's template iterates `tool_call.arguments|items` (a mapping). Serving passes a parsed dict; parquet cannot hold dicts
     with varying keys without null fields, so the training rows carry `params` = [{name, value}] (strings, in order) and the
-    patched template (outputs/E006/Qwen3.5-9B-ifcedit/chat_template.jinja) renders those - same text as the mapping path."""
+    patched template (chat_template.jinja of the merged student) renders those - same text as the mapping path."""
     fn = tc["function"]
     try:
         args = json.loads(fn["arguments"]) if isinstance(fn["arguments"], str) else fn["arguments"]
@@ -99,7 +99,7 @@ def main() -> None:
     ap.add_argument("--specs", default=f"{ROOT}/outputs/tasks_train_v2/*.jsonl", help="task spec files (cluster = target GlobalId)")
     ap.add_argument("--val-fraction", type=float, default=None, help="instead of --val-projects: hold out this fraction of episodes by target-element cluster (RNG --seed)")
     ap.add_argument("--drop-reasoning", action="store_true", help="strip teacher reasoning_content (no-think student)")
-    ap.add_argument("--synthetic-only", action="store_true", help="E008: accept only synthetic buildings (synth_*); any real building -> refuse")
+    ap.add_argument("--synthetic-only", action="store_true", help="accept only synthetic buildings (synth_*); any real building -> refuse")
     ap.add_argument("--exclude-ids", nargs="*", default=[], help="files of task ids to drop (verifier mismatches, rejected paraphrases, ...)")
     ap.add_argument("--val-building-fraction", type=float, default=None, help="hold out this fraction of BUILDINGS (projects) as val (RNG --seed)")
     ap.add_argument("--prefer-later", action="store_true", help="a task id present in several --runs uses the episode of the LAST run listed "
@@ -139,11 +139,11 @@ def main() -> None:
                          "cluster": (_spec_target(s["task_id"], a.specs) or s["task_id"])})
     assert stats["non_dev"] == 0, f"{stats['non_dev']} episodes from non-development projects - refusing to build training data"
     random.Random(a.seed).shuffle(rows)
-    if a.val_building_fraction:   # E008: whole buildings held out
+    if a.val_building_fraction:   # whole buildings held out
         projs = sorted({r["project"] for r in rows}); random.Random(a.seed).shuffle(projs)
         held = set(projs[: max(1, int(round(a.val_building_fraction * len(projs))))])
         val = [r for r in rows if r["project"] in held]; train = [r for r in rows if r["project"] not in held]; a.val_projects = [f"building-holdout {a.val_building_fraction} ({len(held)} buildings)"]
-    elif a.val_fraction:   # E007: hold out whole target-element clusters (a wall and all its tasks) so val never sees a train target
+    elif a.val_fraction:   # hold out whole target-element clusters (a wall and all its tasks) so val never sees a train target
         clusters = sorted({r["cluster"] for r in rows}); random.Random(a.seed).shuffle(clusters)
         held = set(clusters[: max(1, int(round(a.val_fraction * len(clusters))))])
         val = [r for r in rows if r["cluster"] in held]; train = [r for r in rows if r["cluster"] not in held]; a.val_projects = [f"cluster-holdout {a.val_fraction}"]

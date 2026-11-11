@@ -1,4 +1,4 @@
-"""Independent check of the R-qto-* answers (E010 gate). The generator (ifcgym.quantities) takes every quantity from the
+"""Independent check of the R-qto-* answers. The generator (ifcgym.quantities) takes every quantity from the
 triangulated geometry of ifcopenshell.geom (boolean openings included); this script re-derives it from the IFC representation alone,
 without the geometry engine:
   * bodies: vertical IfcExtrudedAreaSolid (profile area x depth) or IfcFacetedBrep / IfcPolygonalFaceSet (volume of the stored

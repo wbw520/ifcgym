@@ -1,11 +1,11 @@
 #!/bin/bash
 # verl FSDP checkpoint -> servable HF model . Runs INSIDE the verl container; no GPU needed
-# (CPU partition is fine): srun ... --container-image=<verl .sqsh> bash train/merge_ckpt.sh
-#   SFT run:  RUN=r1 [STEP=N] [OUT=...] bash train/merge_ckpt.sh      -> outputs/E005/runs/$RUN/merged
+# (CPU is fine).
+#   SFT run:  RUN=r1 [STEP=N] [OUT=...] bash ifcedit/train/merge_ckpt.sh      -> outputs/sft/runs/$RUN/merged
 #   any run:  CKPT=<dir with model_world_size_*.pt> BASE=<model the run started from> OUT=<dir> bash train/merge_ckpt.sh
 set -euo pipefail
 C=${IFCGYM_ROOT}
-O=${SFT_ROOT:-$C/outputs/E006}
+O=${SFT_ROOT:-$C/outputs/sft}
 unset ROCR_VISIBLE_DEVICES ZE_AFFINITY_MASK HIP_VISIBLE_DEVICES
 export HF_HUB_OFFLINE=1 HOME=/tmp/ac-home-$USER; mkdir -p "$HOME"
 if [ -z "${CKPT:-}" ]; then

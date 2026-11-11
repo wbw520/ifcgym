@@ -1,8 +1,8 @@
-# MCP4IFC vendored port (baseline B007)
+# MCP4IFC vendored port
 
 Source: **Show2Instruct/ifc-bonsai-mcp** (package `ifc-bonsai-mcp` 0.1.0), `main` @ `6215493` (2025), MIT licence
 (`LICENSE`, "Copyright (c) 2025 Bharathi Kannan N."). Paper: Nithyanantham et al., "MCP4IFC: IFC-Based Building Design using
-Large Language Models", arXiv 2511.05533. Port date 2026-11-03 (IfcEdit, `research/` E021 comparison rows).
+Large Language Models", arXiv 2511.05533. Ported for the IfcEdit comparison rows.
 
 The authors' system is `AI client (Claude Desktop) -> FastMCP server (src/blender_mcp) -> TCP socket -> Blender add-on
 (blender_addon, inside Blender 4.4 + Bonsai 0.8.2)`; every tool body forwards a command to the add-on, where the IFC work is done
@@ -87,15 +87,15 @@ and an explicit `save_and_load_ifc()` persisted edits - and `output_ifc = ifc_pa
 
 ## Tests
 
-(a) Tool level, no LLM, `.venvs/ifc-audit` in the py312 container on gpu-node, on a copy of `data/ifc-bench/4351/arc.ifc`
+(a) Tool level, no LLM, in a Python 3.12 environment, on a copy of `data/ifc-bench/4351/arc.ifc`
 (IFC2X3, 441 products): `list_blender_commands`, `get_ifc_scene_overview`, `get_scene_info` (plain / MESH + bbox + transform),
 `get_object_info` (detailed, multi-GUID, bad GUID), `get_wall_properties`, `create_wall`, `create_slab`, `execute_ifc_code_tool`
 (prelude import + `save_and_load_ifc()`, blacklisted `import os`, NameError traceback, infinite loop -> "Code execution timed out
 after 60 seconds" from the sandbox), `get_slab_properties` bad GUID, pydantic validation error, final write; the written file
-reopens in a fresh process with the new wall and slab (44 walls). Script: scratchpad `mcp4ifc_test/tool_test.py`.
+reopens in a fresh process with the new wall and slab (44 walls).
 
 (b) Smoke run, `python -m ifcedit.run_external --framework mcp4ifc --model deepseek-v4-flash --base-url http://gpu-node:30004/v1
---tasks data/ifceditbench/tasks.jsonl --out outputs/E021/dev/mcp4ifc_smoke2 --limit 8 --workers 4` (vLLM,
+--tasks data/ifceditbench/tasks.jsonl --out outputs/<run>/dev/mcp4ifc_smoke2 --limit 8 --workers 4` (vLLM,
 `max_model_len` 65,536; budget 20, max_tokens 16,384, temperature 0). `mcp4ifc_smoke` is the first attempt before two loop fixes
 (stored arguments not normalised -> DeepSeek's `{"arguments": ...}` wrap nested deeper every turn; `max_tokens` not reduced on a
 context rejection) and the `detailed` block change; keep it only as a record.

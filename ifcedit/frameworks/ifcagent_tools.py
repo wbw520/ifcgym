@@ -1,8 +1,8 @@
-"""Tool layer of the IFC-Agent reproduction (baseline B008): the paper's atomic IfcOpenShell tools as plain Python.
+"""Tool layer of the IFC-Agent reproduction: the paper's atomic IfcOpenShell tools as plain Python.
 
 Paper: Gao, Hu, Chai, Weng, Li (2026), "Multi-agent framework for schema-guided reasoning and tool-augmented interaction with IFC
-models", Automation in Construction 186, 106888 (no code released). Reproduced from the paper text, Table 1/2, Fig. 2/4/5, Appendix C/D
-and the reproduction brief (scratchpad/ifcagent_brief.md). Every tool is a method of `IfcAgentTools`; all state (the in-memory
+models", Automation in Construction 186, 106888 (no code released). Reproduced from the paper text, Table 1/2, Fig. 2/4/5, Appendix C/D.
+Every tool is a method of `IfcAgentTools`; all state (the in-memory
 ifcopenshell file, `globalid_dict`, `stepid_dict`, the procedure memory, the edit log) lives on the instance, one instance per task,
 because ifcedit.run_external calls run() from several threads. Tool execution is serialised per instance (ifcopenshell is not
 thread-safe; sub-agents of one task run concurrently), file open/write is serialised per process.

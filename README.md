@@ -94,7 +94,7 @@ sb.close()
 ```
 
 `ifcgym/ifctools.py` documents every helper (the table in the paper); `ifcgym/checkers.py` the four gates and their tolerances
-(`docs/DESIGN.md`, Section 6, gives their provenance).
+(`docs/CHECKER_TOLERANCES.md` gives their provenance).
 
 ## Generating buildings and tasks
 

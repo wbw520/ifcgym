@@ -1,4 +1,4 @@
-"""Static invariants of a task set (layer 1 of the task-set gate, 2026-10-22): no model geometry, only the task records and the
+"""Static invariants of a task set (layer 1 of the task-set gate): no model geometry, only the task records and the
 entity ids of the input files. Prints violations per rule and exits 1 if any.
     python scripts/lint_tasks.py 'outputs/tasks_synth2k_v7/*.jsonl' [--limit-files N]
 Rules: every GlobalId in the prompt exists in the input file; target / dependents / allowed ids exist; a DIRECT (-D or classic)
@@ -43,14 +43,14 @@ for p in files:
         t = json.loads(line); n += 1; pr = t["prompt"]; it = t["intent"]; tpl = t["template"]; style = t.get("meta", {}).get("style")
         if not os.path.exists(t["ifc"]):
             flag("ifc-missing", t, t["ifc"]); continue
-        ids = ids_of(t["ifc"]); pg = {g for g in GUID.findall(pr) if not g.startswith(("Qto_", "Pset_", "Ifc"))}   # 22-char quantity-set / IFC class names (E010)
+        ids = ids_of(t["ifc"]); pg = {g for g in GUID.findall(pr) if not g.startswith(("Qto_", "Pset_", "Ifc"))}   # 22-char quantity-set / IFC class names
         for g in pg - ids:
             flag("prompt-id-not-in-model", t, g)
         for g in t.get("target", []) + t.get("allowed", []) + [d["guid"] for d in t.get("dependents", [])]:
             if g not in ids: flag("task-id-not-in-model", t, g)
         tgt = t.get("target", [])
         direct = style == "D" or (style is None and not tpl.startswith(("S-", "R-find")))
-        if it["type"] == "all":    # compound (E009): every non-creation part's element(s) must be allowed; parts are linted as their own tasks
+        if it["type"] == "all":    # compound: every non-creation part's element(s) must be allowed; parts are linted as their own tasks
             allowed = set(t.get("allowed", []))
             for p_ in it.get("parts", []):
                 if p_["type"] in ("create_wall", "create_slab", "create_column", "create_space", "create_fill", "answer"):
@@ -79,7 +79,7 @@ for p in files:
             keys = {"translate": ["vector"], "set_thickness": ["thickness"], "resize_height": ["height"], "create_wall": ["p0", "p1", "thickness", "height"], "create_column": ["size", "height"],
                     "create_slab": ["thickness"], "create_space": ["height"], "create_fill": ["width", "height"]}[it["type"]]
             if style in ("S",) and it["type"] in ("create_wall", "create_column"): keys = [k for k in keys if k not in ("p0", "p1", "xy")]
-            if any(x in tpl for x in ("-height-rel-", "U-window-taller")): keys = [k for k in keys if k != "height"]   # E010: relative change - the prompt gives the delta
+            if any(x in tpl for x in ("-height-rel-", "U-window-taller")): keys = [k for k in keys if k != "height"]   # relative change - the prompt gives the delta
             pn = {x.lstrip("-") for x in re.findall(r"-?\d+(?:\.\d+)?", GUID.sub("", pr))}
             for k in keys:
                 for v in nums_in(it.get(k)):
@@ -97,9 +97,9 @@ for p in files:
         for k in ("storey", "host"):
             if it.get(k) and it[k] not in ids: flag("task-id-not-in-model", t, f"{k}={it[k]}")
         if it["type"] in ("delete_all", "resize_height_all"):
-            if not it.get("guids") or not set(it["guids"]) <= set(tgt) or (set(it["guids"]) != set(tgt) and not tpl.startswith(("D-delete-columns-", "U-columns-to-slab", "D-delete-windows-facing"))): flag("multi-intent-guids-not-target", t)   # E010: derived sets keep their reference element in target
+            if not it.get("guids") or not set(it["guids"]) <= set(tgt) or (set(it["guids"]) != set(tgt) and not tpl.startswith(("D-delete-columns-", "U-columns-to-slab", "D-delete-windows-facing"))): flag("multi-intent-guids-not-target", t)   # derived sets keep their reference element in target
             if not set(it["guids"]) <= set(t.get("allowed", [])): flag("allowed-missing-target-or-dependent", t)
-            if str(len(it["guids"])) not in pr and not tpl.startswith(("D-delete-columns-", "U-columns-to-slab", "D-delete-windows-facing")): flag("intent-number-absent-from-prompt", t, "count")   # E010 / E011: the set is derived, not given
+            if str(len(it["guids"])) not in pr and not tpl.startswith(("D-delete-columns-", "U-columns-to-slab", "D-delete-windows-facing")): flag("intent-number-absent-from-prompt", t, "count")   # the set is derived, not given
         if "ifc_sha1" in meta:
             if t["ifc"] not in sha_cache:
                 import hashlib; sha_cache[t["ifc"]] = hashlib.sha1(open(t["ifc"], "rb").read()).hexdigest()[:16]

@@ -1,7 +1,7 @@
 """Score BIM-Edit tasks from cached features under a configurable rule set, and fit the open rule choices to the official per-task
 scores (calibration models) while reporting agreement on held-out models.
 
-    python -m ifcedit.bimedit_calib --feat outputs/E001/feat --calib claude-sonnet gemini-flash-3.0 --valid gpt-5.4 gpt-5.4-mini
+    python -m ifcedit.bimedit_calib --feat outputs/<run>/feat --calib claude-sonnet gemini-flash-3.0 --valid gpt-5.4 gpt-5.4-mini
 """
 from __future__ import annotations
 

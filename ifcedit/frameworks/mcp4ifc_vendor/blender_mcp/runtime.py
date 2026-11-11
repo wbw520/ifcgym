@@ -1,4 +1,4 @@
-"""Route-2 replacement for the FastMCP instance and the Blender socket client of ifc-bonsai-mcp (IfcEdit, 2026-11-03).
+"""Route-2 replacement for the FastMCP instance and the Blender socket client of ifc-bonsai-mcp (IfcEdit).
 
 Original: api_tools.py did `@mcp.tool()` (FastMCP registration) and `get_blender_connection().send_command(cmd, params)` over a TCP
 socket to the Blender add-on, whose core.py ran the command on Blender's main thread with a 30 s poll timeout.

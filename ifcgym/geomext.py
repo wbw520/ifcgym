@@ -1,4 +1,4 @@
-"""Geometric exterior-wall test (review 2026-10-24): the CubiCasa importer flagged a wall as exterior only when it lay on the plan's
+"""Geometric exterior-wall test: the CubiCasa importer flagged a wall as exterior only when it lay on the plan's
 bounding box, so facades of non-rectangular plans were written with Pset_WallCommon.IsExternal = False. A wall is exterior here when,
 at most of three stations along it (25/50/75 %), exactly one of the two probe points just beyond its faces lies inside the storey
 outline (union of the room polygons, closed by the thickest wall so the wall strips between rooms are filled, enclosed holes filled)."""

@@ -1,10 +1,10 @@
-"""LoRA adapter of an E012 GRPO checkpoint (verl FSDP2, save_lora_only) as a PEFT adapter dir, for train/export_like_base.py.
+"""LoRA adapter of a GRPO checkpoint (verl FSDP2, save_lora_only) as a PEFT adapter dir, for train/export_like_base.py.
 
 The actor checkpoint holds one file per FSDP rank with the lora_A / lora_B tensors as DTensors sharded on dim 0; the shards are
 concatenated in rank order. r / alpha come from lora_train_meta.json. Then build the servable model on top of the start policy:
 
     python3 train/rl/grpo_adapter.py --actor <ckpt>/global_step_N/actor --out <dir>/lora_adapter        (verl container: torch)
-    python3 train/export_like_base.py --base outputs/E011/runs/s2/merged --adapter <dir>/lora_adapter --out <dir>/merged
+    python3 train/export_like_base.py --base <merged SFT student> --adapter <dir>/lora_adapter --out <dir>/merged
 """
 import argparse
 import glob

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Task-set gate (2026-10-22): layer 1 static lint on ALL files, layer 2 scripted oracles on a sample of buildings, layer 3 independent
+# Task-set gate: layer 1 static lint on ALL files, layer 2 scripted oracles on a sample of buildings, layer 3 independent
 # mesh-based reference verifier on the same sample + all dev-val files. Run inside the python:3.12 container.
 #   bash scripts/gate_tasks.sh outputs/tasks_synth2k_v7 outputs/tasks_devval_v7 [n_sample_buildings]
 set -u

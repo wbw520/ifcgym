@@ -1,4 +1,4 @@
-"""Tools-v2 helpers (H001/E007, user 2026-10-20: the BIM-Edit single-tool protocol need not be kept for comparability).
+"""The helper package `h` of the sandbox.
 
 Two things live here, both imported into the sandbox worker as `h`:
   1. `inspect(ifc, guid)` - the structured, read-only `inspect_element` tool: one call returns what an agent otherwise spends
@@ -40,7 +40,7 @@ _BODY_TYPES = {"SweptSolid", "AdvancedSweptSolid", "Brep", "AdvancedBrep", "Tess
 
 def _is_rep(pds, r, identifier: str) -> bool:
     """r is the `identifier` representation; a body without RepresentationIdentifier (some Revit exports: ($,'Tessellation',...))
-    counts as 'Body' when the product has no explicit 'Body' representation (E011 BIM-Edit SLB-UPD-DIR-R-001: helpers moved 0 vertices)."""
+    counts as 'Body' when the product has no explicit 'Body' representation."""
     if r.RepresentationIdentifier == identifier:
         return True
     return (identifier == "Body" and not r.RepresentationIdentifier and r.RepresentationType in _BODY_TYPES
@@ -186,7 +186,7 @@ def _wall_thickness(wall) -> float:
 
 
 def wall_thickness_any(wall) -> float:
-    """Wall thickness in MODEL units: the extrusion profile, else (Brep / faceset bodies, review 2026-10-24) the extent of the body mesh
+    """Wall thickness in MODEL units: the extrusion profile, else (Brep / faceset bodies) the extent of the body mesh
     across the wall axis. _wall_thickness alone returns 0 for those bodies, which made _touching_end miss joined walls (helper-only
     cascade on T3 tasks: 60 % on Brep / faceset walls vs 98 % on extrusions) and add_opening_fill cut 0.2 m deep openings."""
     t = _wall_thickness(wall)
@@ -456,7 +456,7 @@ def stretch_wall_end(f, wall, end: str, delta: float, tol: float | None = None) 
         end_pt = p1 if end == "end" else p0; sgn = 1.0 if end == "end" else -1.0
         bb = _mesh_bbox(wall); t_half = (abs(bb["max"][1 - k] - bb["min"][1 - k]) / 2 + tol) if bb else 1.0
         vec = (u * sgn * delta).tolist() + [0.0]
-        shift_vertices_on_plane(f, wall, axis_name, float(end_pt[k]), vec, within={other: (float(end_pt[1 - k]) - t_half, float(end_pt[1 - k]) + t_half)})   # tol: let it derive (passing model units would be rescaled again - mm bug 2026-10-22)
+        shift_vertices_on_plane(f, wall, axis_name, float(end_pt[k]), vec, within={other: (float(end_pt[1 - k]) - t_half, float(end_pt[1 - k]) + t_half)})   # tol: let it derive (passing model units would be rescaled again - mm bug)
     pds = private(f, wall, "Representation")
     for i, r in enumerate(pds.Representations):
         if _is_rep(pds, r, "Body") and bodies:
@@ -691,7 +691,7 @@ def shift_vertices_on_plane(f, product, plane_axis: str, plane_value: float, vec
         for j in range(len(r.Items)):
             do_item(r, "Items", j, base)
     out = {"guid": product.GlobalId, "vertices_moved": moved, "skipped": sorted(set(skipped))}
-    if not moved:      # say why, instead of a bare 0 the model retries blindly (E011 BIM-Edit no-commit loops)
+    if not moved:      # say why, instead of a bare 0 the model retries blindly
         bb = _mesh_bbox(product); k = "xyz".index(plane_axis) if plane_axis else None
         out["hint"] = ("no vertex within %g of %s = %g%s; the body spans %s" % (tol, plane_axis, plane_value, " inside `within`" if within else "",
                        ("%s in [%g, %g] (model units)" % (plane_axis, bb["min"][k], bb["max"][k])) if bb and k is not None else ("bbox %s" % bb)))
@@ -818,7 +818,7 @@ def connect_walls(f, wall_a, wall_b, a_end: str = "ATEND", b_end: str = "ATSTART
     return {"rel_guid": rel.GlobalId}
 
 
-# ------------------------------------------------------------------------------------------ creation primitives (tools v2.1, 2026-10-22)
+# ------------------------------------------------------------------------------------------ creation primitives (tools v2.1)
 def _ctx(f, identifier: str):
     """Representation (sub)context with the given identifier ('Body', 'Axis'); falls back to any Model/Plan context, creating one."""
     for c in f.by_type("IfcGeometricRepresentationSubContext"):

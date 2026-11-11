@@ -167,7 +167,7 @@ def edit_graph_from(before_graph: tuple, after: ifcopenshell.file) -> EditGraph:
 
 
 def diff_graphs(before_graph: tuple, after_graph: tuple) -> EditGraph:
-    """Edit graph from two prebuilt graphs (2026-10-26: lets the BIM-Edit feature cache reuse the graphs of 349 MB models)."""
+    """Edit graph from two prebuilt graphs (lets the BIM-Edit feature cache reuse the graphs of 349 MB models)."""
     nb, eb = before_graph; na, ea = after_graph
     added = {g: n for g, n in na.items() if g not in nb}
     removed = {g: n for g, n in nb.items() if g not in na}
@@ -188,7 +188,7 @@ def dump(eg: EditGraph) -> str:
 
 def shape_matrix(shp) -> "np.ndarray":
     """4x4 world transform of an ifcopenshell.geom shape. ifcopenshell 0.8 returns 16 floats COLUMN-major (translation in the last
-    four), older versions 12 floats (3 axes + origin). Verified 2026-10-19 on wbdg_office wall #76 (A-E case outputs)."""
+    four), older versions 12 floats (3 axes + origin). Verified on a real-project wall."""
     import numpy as np
     mat = shp.transformation.matrix
     m = np.array(getattr(mat, "data", mat), dtype=float).ravel()

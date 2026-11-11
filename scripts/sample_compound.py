@@ -1,4 +1,4 @@
-"""Compound-instruction and quantity take-off lists (E009 / E010, decisions 2026-10-26): M-compound-2/3 tasks (several numbered edits in one prompt) and the rel-D
+"""Compound-instruction and quantity take-off lists: M-compound-2/3 tasks (several numbered edits in one prompt) and the rel-D
 variants (direct target + a relationship clause). Each kind is capped; within a kind the draw is round-robin over part-family
 combinations (compound) or templates (rel-D), then body styles (extrusion / brep / clipped / faceset), one task per building and
 kind first, so no combination or body dominates. Excluded buildings (dev-val / held-out lists, prior teacher lists) are skipped.
@@ -10,9 +10,9 @@ import argparse, collections, glob, json, random
 def kind(t):
     tp = t["template"]
     if tp.startswith("R-qto-"):
-        return "qto"          # E010: IFC base quantities
+        return "qto"          # IFC base quantities
     if any(k in tp for k in ("-box-", "slab-storey", "stack-column", "thickness-bbox", "slab-extend")):
-        return "cover"        # E010: column / slab coverage
+        return "cover"        # column / slab coverage
     return tp if tp.startswith("M-compound") else "rel-D" if tp.endswith("-rel-D") else None
 
 

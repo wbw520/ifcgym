@@ -1,9 +1,8 @@
-# B008 IFC-Agent reproduction (DeepSeek-V4-Flash backbone)
+# IFC-Agent reproduction (DeepSeek-V4-Flash backbone)
 
 Reproduction of Gao, Hu, Chai, Weng, Li (2026), "Multi-agent framework for schema-guided reasoning and tool-augmented interaction with
 IFC models", Automation in Construction 186, 106888 (DOI 10.1016/j.autcon.2026.106888; no code released) as a prior-method row for the
-IfcEdit held-out tasks. Written 2026-11-03 from the publisher PDF
-and the reproduction brief (`scratchpad/ifcagent_brief.md`, 20 open choices with defaults).
+IfcEdit held-out tasks. Written from the publisher PDF.
 
 ## Files
 
@@ -12,7 +11,6 @@ and the reproduction brief (`scratchpad/ifcagent_brief.md`, 20 open choices with
 | `ifcedit/frameworks/ifcagent_tools.py` | the paper's tool set over IfcOpenShell 0.8.5 as one class `IfcAgentTools` (file, `globalid_dict`, `stepid_dict`, procedure memory, edit log per instance; tool execution serialised per instance, file IO per process); CHOICES C1-C14 in the module docstring |
 | `ifcedit/frameworks/ifcagent.py` | `run(prompt, ifc_path, workdir, client, model, budget, max_tokens, temperature)`: Main Agent + TaskDecompositionAgent + 7 Sequential executors + per-entity text-ReAct sub-agents (Mode I) |
 | `ifcedit/frameworks/IFCAGENT.md` | this note |
-| scratchpad `ifcagent_test/test_tools.py`, `test_mock.py`, `smoke_sel.jsonl` | tool-level test (every tool, no LLM), scripted-LLM end-to-end test, selected retrieval / tier-0 tasks for the second smoke run |
 
 Run: `python -m ifcedit.run_external --framework ifcagent --model deepseek-v4-flash --base-url http://<node>:30004/v1 --tasks <jsonl> --out <dir> [--workers 4] [--budget 20]`
 inside the py312 container (ifcopenshell is not on the login node). `run_external.py` was not changed.
@@ -173,8 +171,8 @@ the result of every sub-agent, keyed by GlobalId."
 ## Smoke runs (DeepSeek-V4-Flash, http://gpu-node:30004/v1, vLLM, max_model_len 65536)
 
 Columns: strict / intent / dependency / preservation; `exec/sub/calls` = executor calls / sub-agents / ReAct tool actions; `in` = prompt tokens.
-Outputs: `outputs/E021/dev/ifcagent_smoke` (prescribed command, first 8 held-out tasks, `--limit 8 --workers 4`), `ifcagent_smoke_sel`
-(10 selected retrieval / tier-0 tasks, scratchpad `ifcagent_test/smoke_sel.jsonl`), `ifcagent_smoke_fix` (4 tasks re-run after the fixes
+Outputs: `outputs/<run>/dev/ifcagent_smoke` (prescribed command, first 8 held-out tasks, `--limit 8 --workers 4`), `ifcagent_smoke_sel`
+(10 selected retrieval / tier-0 tasks), `ifcagent_smoke_fix` (4 tasks re-run after the fixes
 below). No crashes, no `api`/`other` outcomes; validity was true and preservation true for every task (the framework never damaged a file).
 
 ### Run 1: first 8 held-out tasks (all tier-1 creation tasks) - 0/8 strict, as expected by construction
@@ -229,7 +227,7 @@ tools 55 times in run 2 (the Fig. 5 rules name them); run 3 shows only the appli
    main agent fan out Geometry sub-agents over whole storeys: 0.7-3.0 M prompt tokens and 7-18 minutes per task (R-north, S-fire,
    C-create-door-P). A full held-out run (1500 tasks, 4 workers) would take days and ~1-2 G tokens; the cost is intrinsic to Mode I
    (one ReAct agent per entity, hop-by-hop STEP traversal) and the paper's Mode II would not change the LLM-per-entity exploration for
-   geometry. Consider `--limit`/sharding across the held nodes, or sampling the held-out set for this row.
+   geometry. Consider `--limit`/sharding across several nodes, or sampling the held-out set for this row.
 2. **Mode II not reproduced** (ObserverAgent / BulkExecutor / AggregationAgent / PythonExecutor): executor calls with > 20 entities process
    the first 20 and log `mode2_not_reproduced` (happened 3 times in the smoke runs, always Geometry over a storey's walls). This
    under-represents the method on "all walls of storey S" style tasks.

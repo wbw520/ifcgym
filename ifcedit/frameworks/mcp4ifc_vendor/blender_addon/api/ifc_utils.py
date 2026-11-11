@@ -13,7 +13,7 @@ from typing import List, Optional, Any, Dict
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# IfcEdit Route-2 port (2026-11-03): the four helpers below were bound to Bonsai (tool.Ifc.get(), tool.Root.get_default_container(),
+# IfcEdit Route-2 port: the four helpers below were bound to Bonsai (tool.Ifc.get(), tool.Root.get_default_container(),
 # the Bonsai exporter + IfcGit reload, tool.Selection.get()). They now use a plain ifcopenshell file held by an IfcSession that the
 # worker process binds before every command (one worker process per task, so the "current file" is never shared between tasks).
 # Everything below the marker "END OF ROUTE-2 PORT" is the authors' code, unchanged.

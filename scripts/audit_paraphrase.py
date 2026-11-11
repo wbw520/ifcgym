@@ -1,4 +1,4 @@
-"""Paraphrase fidelity audit (review 2026-10-24): applies ifcgym.tasks.fidelity.problems (identifier set, numbers, operative left/right,
+"""Paraphrase fidelity audit: applies ifcgym.tasks.fidelity.problems (identifier set, numbers, operative left/right,
 polarity words) to every paraphrased task; prints counts and writes flagged task ids. Semantic checks: scripts/judge_paraphrase.py.
     python scripts/audit_paraphrase.py <tasks.jsonl> [--out ids.txt]"""
 import json, os, sys, collections

@@ -1,6 +1,6 @@
-"""Sample the teacher task list for the synthetic round (E008): per building k tier-2/3 tasks and m tier-0/1 tasks, so the
+"""Sample the teacher task list for the synthetic buildings: per building k tier-2/3 tasks and m tier-0/1 tasks, so the
 teacher budget (~6000 episodes) is spread over all buildings; the rest of the tasks stay as the RL prompt pool.
-    python scripts/sample_synth_tasks.py --tasks 'outputs/tasks_synth2k/*.jsonl' --out outputs/E008/synth_teacher_tasks.jsonl --k23 2 --k01 1 --seed 0
+    python scripts/sample_synth_tasks.py --tasks 'outputs/tasks_synth2k/*.jsonl' --out outputs/<run>/synth_teacher_tasks.jsonl --k23 2 --k01 1 --seed 0
 """
 import argparse, collections, glob, json, random
 

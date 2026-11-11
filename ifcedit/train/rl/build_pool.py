@@ -1,6 +1,6 @@
-"""E012 RL pool from the k = 4 pre-filter (user 2026-10-24: drop tasks the start policy solves 4/4, keep 1-3/4, cap 0/4 at ~20 %;
+"""RL pool from the k = 4 pre-filter (drop tasks the start policy solves 4/4, keep 1-3/4, cap 0/4 at ~20 %;
 no online filtering). Inputs: the pilot and the pre-filter runs of the start policy (run_tasks --repeats 4, ids '<task>@<i>').
-    python train/rl/build_pool.py   -> outputs/E012/rl_pool_final.jsonl + rl_pool_card.json"""
+    python train/rl/build_pool.py   -> outputs/rl/rl_pool_final.jsonl + rl_pool_card.json"""
 import collections
 import glob
 import json
@@ -8,7 +8,7 @@ import os
 import random
 
 C = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-O = os.path.join(C, "outputs/E012")
+O = os.path.join(C, "outputs/rl")
 ZERO_CAP = 0.20
 
 

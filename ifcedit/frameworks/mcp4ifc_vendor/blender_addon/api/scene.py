@@ -6,7 +6,7 @@ Model-friendly improvements:
 - Optional inclusion of world-space AABB and transform data in listings.
 - Consistent geometry block in detailed object info.
 
-Route-2 port (IfcEdit, 2026-11-03): this module read Blender scene objects (bpy.context.scene.objects, mathutils, bonsai.tool).
+Route-2 port (IfcEdit): this module read Blender scene objects (bpy.context.scene.objects, mathutils, bonsai.tool).
 Without Blender, get_scene_info lists the IfcProducts of the open file with the same fields (name = "<IfcClass>/<Name>" as Bonsai
 names its objects, location = the product's world placement in metres, type MESH if it has a representation else EMPTY, visible
 True, selected False; include_bbox / include_transform are computed from the IFC geometry and placement, `detailed` = a get_blender_object_info-like block

@@ -4,7 +4,7 @@ benchmark's IFC files; the edited file and the structured answer are scored by t
 evaluated; overall = mean over tasks (the paper's protocol). Code + data: data/bibimbap/code (github.com/nbharathik/bibimbap,
 HF clemenskujat/bibimbap-data, CC BY 4.0).
 
-    python -m ifcedit.run_bibimbap --model e7-sft-s1 --protocol v2 --out outputs/E008/bibimbap_s1 [--limit N] [--score-only]
+    python -m ifcedit.run_bibimbap --model <student> --protocol v3 --out outputs/bibimbap/<student> [--limit N] [--score-only]
 Structured-output tasks (numeric / conceptual retrieval): the prompt is extended with the output schema and the agent's final
 message must contain a JSON object with those fields; it is parsed into model_output (plus raw_model_response).
 """
@@ -68,10 +68,10 @@ def main() -> None:
     ap.add_argument("--score-only", action="store_true", help="score existing edited files / answers in --out (no model calls)")
     ap.add_argument("--effort", default=None, choices=["low", "medium", "high", "max"], help="reasoning_effort request field (Kimi-K3), as run_tasks --effort")
     a = ap.parse_args()
-    if a.effort:   # 2026-11-08: shared EXTRA_BODY of run_tasks, which run_episode receives below
+    if a.effort:   # shared EXTRA_BODY of run_tasks, which run_episode receives below
         from ifcedit.run_tasks import EXTRA_BODY as _EB
         _EB["reasoning_effort"] = a.effort
-    a.out = a.out if os.path.isabs(a.out) else os.path.join(os.getcwd(), a.out)   # relative --out broke the sandbox worker path (2026-10-25)
+    a.out = a.out if os.path.isabs(a.out) else os.path.join(os.getcwd(), a.out)   # relative --out broke the sandbox worker path
     tasks = load_tasks()[: a.limit]
     os.makedirs(os.path.join(a.out, "edited"), exist_ok=True); os.makedirs(os.path.join(a.out, "trajectories"), exist_ok=True)
 
@@ -108,7 +108,7 @@ def main() -> None:
         score = sum(ev) / len(ev) if ev else 0.0
         return {"id": tid, "category": t["category"], "crud": t["CRUD"], "test": t["test"], "metrics": metrics, "score": score}
 
-    def safe(t):   # 2026-10-25: one failing episode must not abort the run; it is scored on the unedited input and reported
+    def safe(t):   # one failing episode must not abort the run; it is scored on the unedited input and reported
         try:
             return one(t)
         except Exception as e:  # noqa: BLE001

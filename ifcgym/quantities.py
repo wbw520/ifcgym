@@ -1,5 +1,4 @@
-"""IFC base quantities computed from geometry (E010, user 2026-10-26: BIBIMBAP numeric tasks fail because the student does not know
-quantity take-off definitions; the old R-* numeric templates spelled the formula out in the prompt). Definitions follow the
+"""IFC base quantities computed from geometry. Definitions follow the
 buildingSMART IFC4X3 quantity-set templates shipped with ifcopenshell (ifcopenshell/util/schema/Pset_IFC4X3.ifc):
 
   Qto_WallBaseQuantities   Length (along centre line), Width (perpendicular to the path, constant), Height (nominal),
@@ -114,7 +113,7 @@ def space(c, s) -> dict | None:
         if pc is not None and pc.intersection(fp).area > 1e-6:
             cols.append(pc.intersection(fp))
     inside = unary_union(cols).area if cols else 0.0
-    vg = volume(s, True)      # the body's volume: floor area x height only for prismatic spaces (attic under a sloped roof: review 2026-10-26)
+    vg = volume(s, True)      # the body's volume: floor area x height only for prismatic spaces (attic under a sloped roof)
     if vg is None:
         return None
     prismatic = abs(vg - float(fp.area) * H) <= 0.01 * vg

@@ -1,4 +1,4 @@
-"""LLM equivalence judge for paraphrased prompts (review 2026-10-24: rule checks found left/right flips in 60-70 % of paraphrased
+"""LLM equivalence judge for paraphrased prompts (rule checks found left/right flips in 60-70 % of paraphrased
 'farthest to your left' prompts and GlobalId role shifts that no rule detects). For each task with prompt_template != prompt, asks the
 model whether an agent following the rewrite would do exactly the original task. Output: one JSON line per task
 {task_id, equivalent, severity none|minor|major, problems}. Resumable (skips task ids already in --out).

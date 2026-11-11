@@ -1,4 +1,4 @@
-"""Cascade-tiered task generator on real IFC projects (DESIGN.md §1, decision 2026-10-19).
+"""Cascade-tiered task generator on real IFC projects.
 
 Tier 0  attribute / property edits of one element                (allowed = target)
 Tier 1  host-dependent edits: translate a wall WITH its openings and fills; delete a door WITH its opening   (dependents listed)
@@ -138,7 +138,7 @@ def gen(f: ifcopenshell.file, project: str, per_template: int, rng: random.Rando
 
     # tier 1a: translate a wall that has openings; openings and their fills must move with it, host relations kept
     hosts = [w for w in walls if _openings(w)]
-    if perpendicular:   # generator v2 (2026-10-20): a wall is moved across its axis only - sliding a wall along its axis has no
+    if perpendicular:   # generator v2: a wall is moved across its axis only - sliding a wall along its axis has no
         hosts = [w for w in hosts if _perp_dirs(w)]   # well-defined joint propagation (corner walls would have to follow, then theirs...)
     for w in rng.sample(hosts, min(per_template_move, len(hosts))):
         d = rng.choice(_perp_dirs(w) if perpendicular else list(DIRS)); dist = rng.choice([0.25, 0.5, 0.75, 1.0]); vec = [c * dist for c in DIRS[d]]
@@ -160,7 +160,7 @@ def gen(f: ifcopenshell.file, project: str, per_template: int, rng: random.Rando
             if perpendicular and _collinear(w, o):
                 continue   # generator v2: a collinear continuation cannot keep its joint when the wall moves sideways (released, may change)
             deps.append({"guid": o.GlobalId, "rule": "joined_to", "other": w.GlobalId})
-        if tier > 1 and emit_t1:   # generator v3 (2026-10-22, user): a separate tier-1 task on the same wall - openings must follow, spaces and
+        if tier > 1 and emit_t1:   # generator v3: a separate tier-1 task on the same wall - openings must follow, spaces and
             # joints are allowed to change but not required (synthetic buildings model every space and joint, so a natural tier-1 wall never occurs)
             deps_t1 = [d for d in deps if d["rule"] in ("translate_with", "stays_hosted")]
             allowed_t1 = [w.GlobalId] + [op.GlobalId for op in _openings(w)] + [fl.GlobalId for op in _openings(w) for fl in _fills(op)] + [s.GlobalId for s in sp] + [o.GlobalId for o in cw]
@@ -204,7 +204,7 @@ def gen(f: ifcopenshell.file, project: str, per_template: int, rng: random.Rando
     return tasks
 
 
-# ------------------------------------------------------------------------------------------ 2026-10-22: create / retrieve / spatial-phrasing templates
+# ------------------------------------------------------------------------------------------ create / retrieve / spatial-phrasing templates
 def _axis(w):
     from ifcgym.ifctools import wall_axis_world
     try:
@@ -244,7 +244,7 @@ def _north_of(f, walls, w, scale):
         if ov <= -0.3 / scale or b[0][1] <= y + 0.05 / scale:
             continue
         d = b[0][1] - y
-        if ov <= 0.6 * (x1 - x0) or ov <= 0.6 * (ox1 - ox0):   # touching / partial overlap closer than the answer -> no task      # closer wall with partial overlap -> the reference would be arguable (review 2026-10-22)
+        if ov <= 0.6 * (x1 - x0) or ov <= 0.6 * (ox1 - ox0):   # touching / partial overlap closer than the answer -> no task      # closer wall with partial overlap -> the reference would be arguable
             partial = min(partial, d) if partial is not None else d
             continue
         if best is None or d < best[0] - 1e-9:
@@ -370,7 +370,7 @@ def main() -> None:
     ap.add_argument("--per-template-move", type=int, default=None, help="density for the wall-move tiers 1-3 (default = --per-template)")
     ap.add_argument("--perpendicular", action="store_true", help="generator v2: move walls across their axis only (tiers 1-3 translate templates)")
     ap.add_argument("--families", nargs="*", default=[], choices=["create", "retrieve", "spatial", "update", "delete", "create2", "retrieve2", "concept", "compound", "qto", "cover", "cover2", "cover3", "cover4"],
-                    help="extra template families (2026-10-22): create door/window/wall/column/slab, retrieve area/count/north-wall, spatial phrasing; "
+                    help="extra template families: create door/window/wall/column/slab, retrieve area/count/north-wall, spatial phrasing; "
                          "generator v4 (BIM-Edit / BIBIMBAP grid, derived input arc_v4.ifc): update, delete, create2, retrieve2, concept")
     a = ap.parse_args()
     f = ifcopenshell.open(a.ifc)

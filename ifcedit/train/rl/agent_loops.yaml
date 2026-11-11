@@ -1,3 +1,3 @@
-# custom agent loop for verl's rollout (actor_rollout_ref.rollout.agent.agent_loop_config_path), H001/E012
+# custom agent loop for verl's rollout (actor_rollout_ref.rollout.agent.agent_loop_config_path)
 - name: ifcedit_agent
   _target_: ifcedit.train.rl.agent_loop.IfcEditAgentLoop

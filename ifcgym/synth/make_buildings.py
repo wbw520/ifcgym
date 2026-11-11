@@ -5,7 +5,7 @@
 Per building: one accepted plan (optionally the same plan on every storey), a random Style (units m/mm, IFC4/IFC2X3,
 rect/polyline profiles, revit/archicad names, 1-4 storeys), the IFC at <out>/<id>/arc.ifc, a manifest line with the source
 sample and style. Then tasks: outputs/tasks_synth/<id>.jsonl via ifcgym.tasks.generate --perpendicular (per-template 20).
-Buildings stay out of evaluation: they are training material only (DESIGN.md).
+Buildings stay out of evaluation: they are training material only.
 """
 from __future__ import annotations
 
@@ -30,11 +30,11 @@ def main() -> None:
     ap.add_argument("--start", type=int, default=0, help="skip this many candidate samples first (parallel runs)")
     ap.add_argument("--tiled", type=float, default=0.0, help="fraction of buildings made by tiling 4-8 plans along a corridor with a vertical core")
     ap.add_argument("--families", nargs="*", default=["create", "retrieve", "spatial"], help="extra template families passed to the task generator")
-    ap.add_argument("--body", default=None, choices=["extrusion", "brep", "clipped", "faceset"], help="force the wall/space body style (default: random 45/20/15/20 from the 2026-10-22 survey of 33 real models)")
+    ap.add_argument("--body", default=None, choices=["extrusion", "brep", "clipped", "faceset"], help="force the wall/space body style (default: random 45/20/15/20 from a survey of 33 real models)")
     ap.add_argument("--sparse", default=None, choices=["0", "1"], help="force sparse relations (no connections / space boundaries; default random 20 percent)")
     ap.add_argument("--fills", default="legacy", choices=["legacy", "survey"], help="door / window / opening styles: legacy = the original "
-                    "(vertical plan-profile openings, direct extruded leaves); survey = random per building with the shares of the E014 survey "
-                    "of the 7 non-evaluation ifc-bench models (outputs/E014/survey_fills.txt), plus extra facade windows in half of them")
+                    "(vertical plan-profile openings, direct extruded leaves); survey = random per building with the shares of a survey "
+                    "of the 7 non-evaluation ifc-bench models, plus extra facade windows in half of them")
     ap.add_argument("--schema", default=None, choices=["IFC4", "IFC4X3", "IFC2X3"], help="force the schema (default random IFC4 40 / IFC4X3 40 / IFC2X3 20; both external benchmarks ship IFC4X3)")
     a = ap.parse_args()
     rng = random.Random(a.seed)

@@ -1,4 +1,4 @@
-"""Generator v4 (2026-10-22, user: the student must look good on the external benchmarks too): the operation x entity x reference
+"""Generator v4: the operation x entity x reference
 grid of BIM-Edit (create / update / delete on walls, doors, windows, columns, slabs, spaces; each addressed DIRECTLY by GlobalId,
 TOPOLOGICALLY through relationships, SPATIALLY through geometry, or along a PATH: "after entering B from A through door D, the wall on your right") and the basic / geometry / topological / numeric retrieval
 types of BIBIMBAP, plus the half of BIBIMBAP's "conceptual" questions that admit an operational definition (corridor, hub,
@@ -114,12 +114,12 @@ class Ctx:
         self.poly = {}      # outer profile polygon (metres) of void-free spaces: used where a polygon is written into a prompt
         self._fpc = {}      # shapely footprint with holes from the mesh (lazy): used for containment / area / representative points
         for s in self.spaces:
-            if self._has_voids(s):      # review 2026-10-22: the outer ring of a profile with voids is not the room (centroid may be in the hole)
+            if self._has_voids(s):      # the outer ring of a profile with voids is not the room (centroid may be in the hole)
                 continue
             P = profile_world_polygon(s)
             if P:
                 self.poly[s.GlobalId] = np.array(P)[:, :2] * self.sc
-        self._bbox = {}; self._fc = {}; self._sides = {}     # before self.slabs: _flat_floor -> height -> bbox needs the cache (review 2026-10-24:
+        self._bbox = {}; self._fc = {}; self._sides = {}     # before self.slabs: _flat_floor -> height -> bbox needs the cache (
         # with the cache created after, every slab raised inside _flat_floor's try and was dropped, so v7 had no slab update/delete task)
         self.columns = list(f.by_type("IfcColumn")); self.slabs = [sl for sl in f.by_type("IfcSlab") if self._flat_floor(sl)]
         self.conn = {w.GlobalId: {o.GlobalId for o in _connected_walls(w)} for w in self.walls}
@@ -270,7 +270,7 @@ class Ctx:
 
     def is_external(self, w) -> bool:
         """Pset_WallCommon.IsExternal when present (prompts must not contradict the file), else geometric: one side of the wall
-        inside the storey outline (union of space footprints), the other outside (ifcgym.geomext; review 2026-10-24 replaced
+        inside the storey outline (union of space footprints), the other outside (ifcgym.geomext; replaced
         'bounds exactly one space', which misses facade walls bounding several rooms)."""
         try:
             v = (ue.get_psets(w).get("Pset_WallCommon") or {}).get("IsExternal")
@@ -403,7 +403,7 @@ class Ctx:
                 if not others:
                     continue
                 o = others[0]
-                # review 2026-10-24 (supplement gate: 11 ambiguous): candidates = every fill of that class on the storey; corner = the
+                # candidates = every fill of that class on the storey; corner = the
                 # intersection of the two walls' axis lines; the prompt states both
                 ua, ub = self.udir(w), self.udir(o); A_ = np.array([ua, -ub]).T
                 if abs(float(np.linalg.det(A_))) < 1e-6:
@@ -516,7 +516,7 @@ class Ctx:
         Returns (space_a, space_b) GlobalIds (a on the -n side, b on the +n side) or None."""
         if d.GlobalId in self._sides:
             return self._sides[d.GlobalId]
-        # review 2026-10-24: 'nearest reference point on each side' picked a large L-shaped room whose inside point lay near the wall
+        # 'nearest reference point on each side' picked a large L-shaped room whose inside point lay near the wall
         # (wrong room) and dropped doors whose two rooms' inside points fell on the same side. Now: the space whose footprint contains
         # a probe point just beyond each face of the wall at the door centre (0.15 / 0.3 / 0.5 m, first distance that hits).
         op, w = self.host(d); u = self.udir(w); n = np.array([-u[1], u[0]]); c, width = self.fill_centre(d)
@@ -572,7 +572,7 @@ class Ctx:
 
     @staticmethod
     def side_def(side):
-        """Define only the side the reference uses (review 2026-10-24: 'farthest to your left ... your right = clockwise' made the
+        """Define only the side the reference uses ('farthest to your left ... your right = clockwise' made the
         paraphraser write 'right' in 60-70 % of left prompts)."""
         return {"left": "your left = that direction turned counter-clockwise, seen from above", "right": "your right = that direction turned clockwise, seen from above"}.get(side, "you face along that direction")
 
@@ -918,7 +918,7 @@ def gen_v4(ifc_path: str, project: str, per_template: int, rng: random.Random, t
                 add(f"D-delete-{kind}-{r[1]}", f"Delete {r[0]} together with its opening, so that the host wall becomes solid again. The wall itself must remain. {NC}",
                     [dd.GlobalId], [dd.GlobalId, op.GlobalId, w.GlobalId], {"type": "delete", "guid": dd.GlobalId}, [{"guid": op.GlobalId, "rule": "removed"}, {"guid": w.GlobalId, "rule": "unchanged"}], {"style": r[1], **r[2]})
                 st_ = c.storey_of(dd)
-                if "compound" in families and st_ is not None:   # E009: BIM-Edit-style direct prompt spelling out every relationship
+                if "compound" in families and st_ is not None:   # BIM-Edit-style direct prompt spelling out every relationship
                     add(f"D-delete-{kind}-rel-D", f"Delete the {kind} with GlobalId {dd.GlobalId}. Also delete its opening (the IfcOpeningElement with GlobalId {op.GlobalId}) and remove the relationships of that opening to the wall with GlobalId {w.GlobalId} (IfcRelVoidsElement) and to the {kind} (IfcRelFillsElement), as well as the {kind}'s containment in {c.storey_ref(st_)}. The wall itself must remain unchanged. {NC}",
                         [dd.GlobalId], [dd.GlobalId, op.GlobalId, w.GlobalId], {"type": "delete", "guid": dd.GlobalId}, [{"guid": op.GlobalId, "rule": "removed"}, {"guid": w.GlobalId, "rule": "unchanged"}], {"style": "D"})
         for w in sample(c.walls, k):
@@ -994,7 +994,7 @@ def gen_v4(ifc_path: str, project: str, per_template: int, rng: random.Random, t
                 add(f"C-create-{kind}-{r[1]}", f"Add a {kind} {width} m wide and {height} m high to {r[0]}, anywhere along the wall where it does not overlap an existing opening" + (" with its sill 0.9 m above the wall's base" if kind == "window" else ", starting at the wall's base") + f". The {kind} must be hosted by that wall through an opening (IfcRelVoidsElement / IfcRelFillsElement). {NC}",
                     [w.GlobalId], [w.GlobalId], {"type": "create_fill", "host": w.GlobalId, "kind": kind, "width": width, "height": height, "sill": sill, "tol": 0.03}, [], {"style": r[1], **r[2]}, ["IfcOpeningElement", "IfcDoor" if kind == "door" else "IfcWindow"])
                 st_ = c.storey_of(w)
-                if "compound" in families and st_ is not None:   # E009: direct, every relationship spelled out (BIM-Edit direct prompts)
+                if "compound" in families and st_ is not None:   # direct, every relationship spelled out (BIM-Edit direct prompts)
                     cls_ = "IfcDoor" if kind == "door" else "IfcWindow"
                     add(f"C-create-{kind}-rel-D", f"Add a {kind} {width} m wide and {height} m high to the wall with GlobalId {w.GlobalId}, anywhere along the wall where it does not overlap an existing opening" + (" with its sill 0.9 m above the wall's base" if kind == "window" else ", starting at the wall's base") + f". Also create an opening (IfcOpeningElement) for it and establish the relationships between the wall and the opening (IfcRelVoidsElement) and between the opening and the {kind} (IfcRelFillsElement), and assign the new {kind} to {c.storey_ref(st_)} (IfcRelContainedInSpatialStructure). {NC}",
                         [w.GlobalId], [w.GlobalId], {"type": "create_fill", "host": w.GlobalId, "kind": kind, "width": width, "height": height, "sill": sill, "tol": 0.03},
@@ -1167,13 +1167,12 @@ def gen_v4(ifc_path: str, project: str, per_template: int, rng: random.Random, t
                     q("A-door-path-T", f"Which doors lie on the shortest path (counted in doors) from the space with GlobalId {src} to the space with GlobalId {dst_}? A door connects the two spaces that lie on either side of its wall at the door's position (both bounded by that wall, nearest on each side); the shortest path is unique here. {JSL}", [src, dst_], {"type": "answer", "kind": "guids", "value": sorted(paths[dst_][0])}, {"anchors": [src, dst_]})
         ground = c.storeys[0] if c.storeys else None
         if ground is not None:
-            # review 2026-10-24: with correct exterior labels many ground-floor doors sit in exterior walls (balconies, terraces); the
+            # with correct exterior labels many ground-floor doors sit in exterior walls (balconies, terraces); the
             # entrance is the exterior door with a space beyond one face of its wall and no space at all beyond the other
             ext = [d for d in c.doors if c.storey_of(d) == ground and c.is_external(c.host(d)[1]) and c.exit_door(d)]
             if len(ext) == 1:
                 q("A-entrance-T", f"Which door is the building entrance, defined as the only door on the lowest storey ({c.storey_ref(ground)}) that is hosted by an exterior wall (Pset_WallCommon.IsExternal = true) and leads outside: just beyond one face of its wall at the door there is a space (IfcSpace), just beyond the other face there is none (doors to balconies or terraces modelled as spaces do not count)? {JSG}", [ext[0].GlobalId], {"type": "answer", "kind": "guid", "value": ext[0].GlobalId})
-    # ------------------------------------------------------------------ COVER (E010, user 2026-10-26: columns and slabs were 2-3 % of the SFT
-    # data and BIM-Edit column / slab create + update trailed most). Generic IFC edits the older templates never asked for: bounding-box
+    # ------------------------------------------------------------------ COVER: generic IFC edits the older templates never asked for: bounding-box
     # sizing with a base elevation, relationships for a NEW column / slab (containment, IfcRelSpaceBoundary, IfcRelConnectsElements),
     # moving a slab to another storey's level with re-containment, stacking a column onto the one below, slab thickness by bounding box
     # with the bottom fixed, one-sided slab extension / shortening.
@@ -1292,13 +1291,13 @@ def gen_v4(ifc_path: str, project: str, per_template: int, rng: random.Random, t
             add(f"U-slab-extend-{r[1]}", f"{verb}, keeping its edge at x = {fixed} fixed. Keep its Y extent, thickness and elevation, and preserve its relationships. {NC}",
                 [sl.GlobalId], [sl.GlobalId], {"type": "bbox", "guid": sl.GlobalId, "lo": fmt(lo), "hi": fmt(hi), "tol": 0.05}, [], {"style": r[1], **r[2]})
 
-    # ------------------------------------------------------------------ COVER2 (E010, user 2026-10-26: "1-5 都做"): the operation types the
+    # ------------------------------------------------------------------ COVER2: the operation types the
     # two benchmarks ask for that no template covered: relationship-spelling deletes of walls / columns / slabs / rooms; wall by bounding
     # box with connections and space boundaries; room by bounding box with boundaries, room merge, room bbox shrink, relative room height;
     # one-sided wall thickness; shorten + delete a named connection; window moved to the wall below; opening widened symmetrically; window
     # made taller; door / window by the opening's bounding box; opening cut in a slab; slab on the tops of columns; slab laid on a slab.
     if "cover2" in families or "cover3" in families:
-        R3 = "cover3" in families     # E010 cover3 (user 2026-10-26 "我还是希望教师就有一些"): the same operations with the target referenced by description
+        R3 = "cover3" in families     # the same operations with the target referenced by description
         def elev2(st):
             return round(float(world_matrix(st)[2, 3]) * sc, 3)
         def lst(ids):
@@ -1692,8 +1691,8 @@ def gen_v4(ifc_path: str, project: str, per_template: int, rng: random.Random, t
                     add("D-delete-columns-outside-D", f"Delete the columns (IfcColumn) contained in {c.storey_ref(st)} that are outside of the rooms with GlobalIds {lst(keep)}. {NC}",
                         [st_g] + out_, out_, {"type": "delete_all", "guids": out_}, [], {"style": "D", "anchors": keep + [st_g]})
 
-    # ------------------------------------------------------------------ COVER4 (E011, user 2026-10-27 "你看差的。数据不够的可以补一补"; "补。改"):
-    # the operations behind the E010 student's BIM-Edit / BIBIMBAP failures: rooms referenced by their bounding walls (merge, create by
+    # ------------------------------------------------------------------ COVER4:
+    # the operations behind an earlier student's BIM-Edit / BIBIMBAP failures: rooms referenced by their bounding walls (merge, create by
     # enclosure), merge deleting "the elements that separate", room extended to a coordinate; storey length (its floor slab); slab lying
     # directly above the walls of a storey; slab under the window walls / the walls of a room; column moved towards the nearest exterior
     # wall; column on top of a column; wall centred between two facing walls; windows of the walls facing a compass direction (a window
@@ -1929,7 +1928,7 @@ def gen_v4(ifc_path: str, project: str, per_template: int, rng: random.Random, t
                 sorted(x.GlobalId for x in wins), sorted(x.GlobalId for x in wins) + ops + hosts, {"type": "delete_all", "guids": sorted(x.GlobalId for x in wins)},
                 [{"guid": o_, "rule": "removed"} for o_ in ops] + [{"guid": g, "rule": "unchanged"} for g in hosts], {"style": "S", "direction": dname, "anchors": [st.GlobalId] if st is not None else [], "n": len(wins)})
 
-    # ------------------------------------------------------------------ QTO (E010, 2026-10-26): IFC base quantities by NAME only
+    # ------------------------------------------------------------------ QTO: IFC base quantities by NAME only
     # (BIBIMBAP numeric tasks name the quantity and expect the take-off definition; every older R-* template spelled the formula out).
     # Values from ifcgym.quantities (IFC4X3 Qto_* definitions), re-derived from the representation by scripts/verify_qto.py.
     if "qto" in families:
@@ -2022,7 +2021,7 @@ def gen_v4(ifc_path: str, project: str, per_template: int, rng: random.Random, t
                     prop = rng.choice(["Area", "Volume"])
                     qq(f"R-qto-slab-opening-{prop}-D", f"the opening (IfcOpeningElement) in the slab with GlobalId {sl.GlobalId}", "Qto_OpeningElementBaseQuantities", prop,
                        "V" if prop == "Volume" else "A", qv[prop], [ops_[0].GlobalId], {"style": "D"}, tol=0.01)
-    if "compound" in families:      # E009 (2026-10-26): several independent edits in one instruction (BIM-Edit direct prompts)
+    if "compound" in families:      # several independent edits in one instruction (BIM-Edit direct prompts)
         T += compound_tasks(T, rng, tid, sha, {s_.GlobalId for s_ in c.storeys}, n=max(1, per_template))
     return T
 
@@ -2034,8 +2033,7 @@ CREATE_TYPES = {"create_column", "create_fill", "create_slab", "create_wall", "c
 
 
 def compound_tasks(T: list, rng: random.Random, tid, sha: str, storeys: set, n: int = 2) -> list:
-    """Compound instructions (E009, user 2026-10-26: BIM-Edit's direct prompts bundle several requirements and the student ran out of
-    budget before committing). Parts = single v4 edit tasks of the same building whose element sets are disjoint (storeys excepted),
+    """Compound instructions. Parts = single v4 edit tasks of the same building whose element sets are disjoint (storeys excepted),
     at most one part per creation type (the creation checkers expect exactly one new element of their class). Intent {"type": "all"}:
     strict success needs every part; target / allowed / dependents / new classes are the unions; the parts' templates and metas are kept
     for the oracle and for part-level rewards."""
