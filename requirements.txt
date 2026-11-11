@@ -1,0 +1,12 @@
+# environment, checkers, task generation, evaluation (Python >= 3.12)
+ifcopenshell==0.8.5
+numpy>=2.0
+shapely>=2.0
+scipy>=1.14
+openai>=1.50
+pyyaml
+pyarrow
+pydantic>=2
+# optional: figures and renders
+matplotlib
+pillow

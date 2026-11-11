@@ -1,0 +1,7 @@
+ifcbench:ac20
+ifcbench:fantasy_office_building_2
+ifcbench:fantasy_residential_building_1
+ifcbench:fzk_house
+ifcbench:hitos
+ifcbench:wbdg_office
+ifcbench:west_riverside_hospital

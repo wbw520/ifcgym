@@ -1,0 +1,72 @@
+{
+ "best": {
+  "props_mode": "all",
+  "match": "obb",
+  "require_class_match": true,
+  "zero_if_no_match": false,
+  "delete_semantics": "present_is_one",
+  "min_iou": 0.05,
+  "rels": [
+   "IfcRelVoidsElement",
+   "IfcRelFillsElement",
+   "IfcRelContainedInSpatialStructure",
+   "IfcRelAggregates",
+   "IfcRelConnectsPathElements",
+   "IfcRelSpaceBoundary"
+  ],
+  "anchored_pin": true,
+  "align": "edit"
+ },
+ "score": 0.20825,
+ "per_model": {
+  "claude-sonnet": {
+   "n": 324,
+   "mae": [
+    0.2618,
+    0.2696,
+    0.2035,
+    0.1842
+   ],
+   "within05": 0.463,
+   "ours_mean": 0.4206,
+   "off_mean": 0.4531
+  },
+  "gemini-flash-3.0": {
+   "n": 324,
+   "mae": [
+    0.2762,
+    0.3387,
+    0.3844,
+    0.2323
+   ],
+   "within05": 0.198,
+   "ours_mean": 0.5048,
+   "off_mean": 0.4948
+  },
+  "gpt-5.4": {
+   "n": 324,
+   "mae": [
+    0.2993,
+    0.2846,
+    0.2376,
+    0.2033
+   ],
+   "within05": 0.352,
+   "ours_mean": 0.4526,
+   "off_mean": 0.4394
+  },
+  "gpt-5.4-mini": {
+   "n": 324,
+   "mae": [
+    0.2747,
+    0.274,
+    0.2149,
+    0.2005
+   ],
+   "within05": 0.407,
+   "ours_mean": 0.3757,
+   "off_mean": 0.3978
+  }
+ },
+ "_note": "2026-10-26: \"align\": \"edit\" restored - the frozen calibration (outputs/E001/calib_v4.json) used align=edit; the option was added later with default gt_guid, so this file (written before) silently switched to GUID alignment (+16 points on the released runs)."
+}

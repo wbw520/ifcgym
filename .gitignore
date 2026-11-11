@@ -1,0 +1,14 @@
+# data, weights and run artefacts never enter the repository
+data/
+models/
+outputs/
+checkpoints/
+wandb/
+logs/
+__pycache__/
+*.pyc
+.venv/
+*.pt
+*.safetensors
+*.ckpt
+*.egg-info/

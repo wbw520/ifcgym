@@ -1,0 +1,9 @@
+{
+  "_comment": "Example model registry for ifcedit.run_* (--model <key>). Every entry is an OpenAI-compatible chat endpoint; set the URL with --base-url or the environment variable RESEARCH_SERVICE_<KEY> (upper case, '-' -> '_'). The 'serve' field shows the vLLM / SGLang flags the paper used.",
+  "qwen35-9b": {"model": "Qwen/Qwen3.5-9B", "serve": "vllm --max-model-len 65536 --language-model-only --reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser qwen3_coder"},
+  "qwen35-27b": {"model": "Qwen/Qwen3.5-27B", "serve": "vllm --max-model-len 65536 --language-model-only --reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser qwen3_coder"},
+  "ifcedit-9b": {"model": "<merged SFT+GRPO checkpoint>", "serve": "same flags as qwen35-9b"},
+  "deepseek-v4-flash": {"model": "deepseek-ai/DeepSeek-V4-Flash", "serve": "vllm --max-model-len 65536 --kv-cache-dtype fp8 --enable-auto-tool-choice --tool-call-parser deepseek_v31"},
+  "gemma4-31b": {"model": "google/gemma-4-31b-it", "serve": "sglang --context-length 131072 --tool-call-parser gemma4 --reasoning-parser gemma4"},
+  "kimi-k3": {"model": "moonshotai/Kimi-K3", "serve": "teacher; thinking mode, served across 4 nodes in the paper"}
+}

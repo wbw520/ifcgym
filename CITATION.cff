@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use IfcGym or IfcEdit, please cite the paper."
+title: "Learning to Edit IFC Building Models: Verifiable Checkers as the Training Signal for Dependency-Aware Editing Agents"
+authors:
+  - family-names: "Wang"
+    given-names: "Bowen"
+    affiliation: "Osaka University"
+year: 2026
+type: article
+repository-code: "https://github.com/wbw520/ifcgym"
+license: Apache-2.0
