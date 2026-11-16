@@ -115,16 +115,6 @@ bash scripts/gate_tasks.sh outputs/tasks                       # static lint, sc
 per step, lr 1e-5, KL 1e-2, 100 steps), then `ifcedit/train/merge_ckpt.sh` to serve the result. The shell scripts were written for a
 Slurm cluster with the verl container; the Python entry points and the hyperparameters are cluster-independent.
 
-## Citation
-
-```bibtex
-@misc{ifcedit2026,
-  title        = {Learning to Edit {IFC} Building Models: Verifiable Checkers as the Training Signal for Dependency-Aware Editing Agents},
-  author       = {Wang, Bowen and others},
-  year         = {2026},
-  howpublished = {\url{https://github.com/wbw520/ifcgym}}
-}
-```
 
 ## Licence
 
