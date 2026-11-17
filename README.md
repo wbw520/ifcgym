@@ -1,5 +1,8 @@
 # IfcGym and IfcEdit
 
+**Datasets (Hugging Face):** [wbw520wbw520/ifceditbench](https://huggingface.co/datasets/wbw520wbw520/ifceditbench) (IfcEditBench, the test set) ·
+[wbw520wbw520/ifcgym-synthetic](https://huggingface.co/datasets/wbw520wbw520/ifcgym-synthetic) (synthetic buildings, tasks, SFT corpus, RL pool)
+
 Code for **Learning to Edit IFC Building Models: Verifiable Checkers as the Training Signal for Dependency-Aware Editing Agents**.
 
 * **IfcGym** (`ifcgym/`) is an editing environment for IFC building models: a replayable CodeAct sandbox with one tool,
@@ -9,9 +12,7 @@ Code for **Learning to Edit IFC Building Models: Verifiable Checkers as the Trai
   BIM-Edit and BIBIMBAP, re-implementations of two prior frameworks (MCP4IFC, IFC-Agent) for comparison, and the two-stage
   training recipe (distillation of verified teacher episodes by SFT, then GRPO with strict success as the reward).
 
-The datasets are distributed on Hugging Face: [wbw520wbw520/ifceditbench](https://huggingface.co/datasets/wbw520wbw520/ifceditbench)
-(the test set) and [wbw520wbw520/ifcgym-synthetic](https://huggingface.co/datasets/wbw520wbw520/ifcgym-synthetic) (synthetic buildings,
-tasks, the SFT corpus and the RL pool); see [`docs/DATA.md`](docs/DATA.md). The paper's numbers are reproduced by the steps in [`docs/REPRODUCE.md`](docs/REPRODUCE.md).
+The datasets are described in [`docs/DATA.md`](docs/DATA.md). The paper's numbers are reproduced by the steps in [`docs/REPRODUCE.md`](docs/REPRODUCE.md).
 
 ## Installation
 
