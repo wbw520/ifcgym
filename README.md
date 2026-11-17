@@ -9,8 +9,9 @@ Code for **Learning to Edit IFC Building Models: Verifiable Checkers as the Trai
   BIM-Edit and BIBIMBAP, re-implementations of two prior frameworks (MCP4IFC, IFC-Agent) for comparison, and the two-stage
   training recipe (distillation of verified teacher episodes by SFT, then GRPO with strict success as the reward).
 
-The datasets (IfcEditBench, the synthetic buildings, the SFT corpus and the RL pool) are distributed on Hugging Face, see
-[`docs/DATA.md`](docs/DATA.md). The paper's numbers are reproduced by the steps in [`docs/REPRODUCE.md`](docs/REPRODUCE.md).
+The datasets are distributed on Hugging Face: [wbw520wbw520/ifceditbench](https://huggingface.co/datasets/wbw520wbw520/ifceditbench)
+(the test set) and [wbw520wbw520/ifcgym-synthetic](https://huggingface.co/datasets/wbw520wbw520/ifcgym-synthetic) (synthetic buildings,
+tasks, the SFT corpus and the RL pool); see [`docs/DATA.md`](docs/DATA.md). The paper's numbers are reproduced by the steps in [`docs/REPRODUCE.md`](docs/REPRODUCE.md).
 
 ## Installation
 

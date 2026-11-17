@@ -4,8 +4,10 @@ All datasets are distributed on Hugging Face; the code expects them under `$IFCG
 
 | Hugging Face dataset | Contents | Licence | Size |
 |---|---|---|---|
-| `wbw520/ifceditbench` | the 1,990 IfcEditBench tasks (`tasks.jsonl`) and the 13 real projects they edit (`ifc-bench/<project>/arc.ifc` with each project's own licence file) | CC BY 4.0 (collection); per-project licences inside | about 1 GB |
-| `wbw520/ifcgym-synthetic` | 3,058 synthetic training buildings with randomised export styles, their generated and paraphrased tasks, the SFT corpus (19,141 train / 2,270 val episodes, parquet) and the GRPO task pool (5,895 tasks + parquet) | CC BY-NC 4.0 (derived from CubiCasa5K) | about 4 GB |
+| [wbw520wbw520/ifceditbench](https://huggingface.co/datasets/wbw520wbw520/ifceditbench) | the 1,990 IfcEditBench tasks (`tasks.jsonl`) and the 13 real projects they edit (`ifc-bench/<project>/arc.ifc` with each project's own licence file) | CC BY 4.0 (collection); per-project licences inside | 0.3 GB |
+| [wbw520wbw520/ifcgym-synthetic](https://huggingface.co/datasets/wbw520wbw520/ifcgym-synthetic) | 3,400 synthetic training buildings (3,000 of the main set + 400 with the second door/window/opening generator) with randomised export styles, their generated tasks and the nine paraphrased teacher task lists, the SFT corpus (19,141 train / 2,270 val episodes, parquet) and the GRPO task pool (5,895 tasks + parquet) | CC BY-NC 4.0 (derived from CubiCasa5K) | 2.4 GB |
+
+The two datasets are opened together with the preprint of the paper.
 
 External benchmarks are downloaded from their authors:
 
